@@ -2,6 +2,7 @@ from carioca import *
 import unittest
 
 class Trios(unittest.TestCase):
+    # valid trios
     def test_trio_different_suites(self):
         cards = [Card(A, SPADES), Card(A, HEARTS), Card(A, DIAMONDS)]
         self.assertTrue(is_trio(cards))
@@ -17,6 +18,21 @@ class Trios(unittest.TestCase):
     def test_joker_in_the_middle(self):
         cards = [Card(2, DIAMONDS), Card(JOKER, None), Card(2, CLUBS)]
         self.assertTrue(is_trio(cards))
+
+    # invalid trios
+    def test_three_different_ranks(self):
+        cards = [Card(2, DIAMONDS), Card(5, SPADES), Card(J, CLUBS)]
+        self.assertFalse(is_trio(cards))
+    def test_two_different_ranks(self):
+        cards = [Card(Q, SPADES), Card(A, HEARTS), Card(Q, HEARTS)]
+        self.assertFalse(is_trio(cards))
+    def test_two_jokers(self):
+        cards = [Card(10, HEARTS), Card(JOKER, None), Card(JOKER, None)]
+        self.assertFalse(is_trio(cards))
+    def test_three_jokers(self):
+        cards = [Card(JOKER, None), Card(JOKER, None), Card(JOKER, None)]
+        self.assertFalse(is_trio(cards))
+
 
 
 class Decks(unittest.TestCase):
