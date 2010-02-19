@@ -52,6 +52,18 @@ def Cs(r):
 
 
 def card_repr(card):
+    '''Human-friendly card representation.
+
+    >>> card_repr(Card(rank=2, suit=HEARTS))
+    u'2♥'
+    >>> Card(rank=13, suit=SPADES)
+    u'K♠'
+    >>> Card(rank=10, suit=CLUBS)
+    u'10♣'
+    >>> Card(rank=0, suit=None)
+    u'JOKER'
+    '''
+
     if card.rank == JOKER:
         return u'JOKER'
     if card.rank in LETTER_REPRS:
