@@ -79,5 +79,5 @@ def create_deck():
 def is_trio(cards):
     nr_jokers = len([card for card in cards if card.rank == JOKER])
     different_ranks = set(card.rank for card in cards if card.rank != JOKER)
-    return (len(cards) >= 3 and len(different_ranks) == 1 and nr_jokers <= 1)
+    return (len(cards) == 3 and len(different_ranks) == 1 and nr_jokers <= 1)
 

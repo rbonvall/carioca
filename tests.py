@@ -25,6 +25,10 @@ class Trios(unittest.TestCase):
         self.assertFalse(is_trio(Cs(u'10♥ jkr jkr')))
     def test_three_jokers(self):
         self.assertFalse(is_trio(Cs(u'jkr jkr jkr')))
+    def test_too_short(self):
+        self.assertFalse(is_trio(Cs(u'4♣ 4♠')))
+    def test_too_long(self):
+        self.assertFalse(is_trio(Cs(u'8♥ 8♠ 8♣ 8♦')))
 
 
 class Straights(unittest.TestCase):
