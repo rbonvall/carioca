@@ -27,6 +27,52 @@ class Trios(unittest.TestCase):
         self.assertFalse(is_trio(Cs(u'jkr jkr jkr')))
 
 
+class Straights(unittest.TestCase):
+    # valid straights
+    def test_simple_straight(self):
+        self.assertTrue(is_straight(Cs(u'3♥ 4♥ 5♥ 6♥')))
+    def test_with_monkeys(self):
+        self.assertTrue(is_straight(Cs(u'9♠ 10♠ J♠ Q♠')))
+    def test_start_with_ace(self):
+        self.assertTrue(is_straight(Cs(u'A♦ 2♦ 3♦ 4♦')))
+    def test_end_with_ace(self):
+        self.assertTrue(is_straight(Cs(u'J♣ Q♣ K♣ A♣')))
+    def test_wrap_around(self):
+        # This decision is based on the results of an informal poll on twitter.
+        # Some say this isn't a valid straight.
+        self.assertTrue(is_straight(Cs(u'K♥ A♥ 2♥ 3♥')))
+    def test_start_with_joker(self):
+        self.assertTrue(is_straight(Cs(u'jkr 7♠ 8♠ 9♠')))
+    def test_end_with_joker(self):
+        self.assertTrue(is_straight(Cs(u'3♠ 4♠ 5♠ jkr')))
+    def test_joker_in_the_middle(self):
+        self.assertTrue(is_straight(Cs(u'9♣ 10♣ jkr J♣')))
+
+    # invalid straights
+    def test_non_consecutive_ranks(self):
+        self.assertFalse(is_straight(Cs(u'2♠ 4♠ 9♠ 10♠')))
+    def test_off_by_one(self):
+        self.assertFalse(is_straight(Cs(u'5♥ 7♥ 8♥ 9♥')))
+    def test_repeated_rank(self):
+        self.assertFalse(is_straight(Cs(u'A♦ 2♦ 2♦ 3♦')))
+    def test_one_different_suit(self):
+        self.assertFalse(is_straight(Cs(u'9♣ 10♣ J♥ Q♣')))
+    def test_all_different_suits(self):
+        self.assertFalse(is_straight(Cs(u'J♣ Q♠ K♦ A♥')))
+    def test_wrong_order(self):
+        self.assertFalse(is_straight(Cs(u'2♦ 3♦ 5♦ 4♦')))
+    def test_joker_misplaced(self):
+        self.assertFalse(is_straight(Cs(u'7♣ 8♣ jkr 9♣')))
+    def test_two_jokers(self):
+        self.assertFalse(is_straight(Cs(u'4♥ jkr 6♥ 7♥')))
+    def test_four_jokers(self):
+        self.assertFalse(is_straight(Cs(u'jkr jkr jkr jkr')))
+    def test_too_short(self):
+        self.assertFalse(is_straight(Cs(u'3♠ 4♠ 5♠')))
+    def test_too_long(self):
+        self.assertFalse(is_straight(Cs(u'3♠ 4♠ 5♠ 6♠ 7♠')))
+
+
 class ConstructorAndRepr(unittest.TestCase):
     def setUp(self):
         self.deck = create_deck()
