@@ -50,7 +50,7 @@ class Straights(unittest.TestCase):
     def test_end_with_joker(self):
         self.assertTrue(is_straight(Cs(u'3♠ 4♠ 5♠ jkr')))
     def test_joker_in_the_middle(self):
-        self.assertTrue(is_straight(Cs(u'9♣ 10♣ jkr J♣')))
+        self.assertTrue(is_straight(Cs(u'9♣ 10♣ jkr Q♣')))
 
     # invalid straights
     def test_non_consecutive_ranks(self):
@@ -68,7 +68,7 @@ class Straights(unittest.TestCase):
     def test_joker_misplaced(self):
         self.assertFalse(is_straight(Cs(u'7♣ 8♣ jkr 9♣')))
     def test_two_jokers(self):
-        self.assertFalse(is_straight(Cs(u'4♥ jkr 6♥ 7♥')))
+        self.assertFalse(is_straight(Cs(u'4♥ jkr 6♥ jkr')))
     def test_four_jokers(self):
         self.assertFalse(is_straight(Cs(u'jkr jkr jkr jkr')))
     def test_too_short(self):
