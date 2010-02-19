@@ -19,7 +19,7 @@ class InvalidSuit(ValueError): pass
 
 
 def C(r):
-    '''Convenient constructor for cards from a string argument.
+    u'''Convenient constructor for cards from a string argument.
 
     >>> C(u'2♥')
     Card(rank=2, suit=u'\\u2665')
@@ -53,7 +53,7 @@ def Cs(r):
 
 
 def card_repr(card):
-    '''Human-friendly card representation.
+    u'''Human-friendly card representation.
 
     >>> card_repr(Card(rank=2, suit=HEARTS))
     u'2♥'
