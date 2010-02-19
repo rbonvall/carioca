@@ -34,6 +34,13 @@ class Trios(unittest.TestCase):
         self.assertFalse(is_trio(cards))
 
 
+class ConstructorAndRepr(unittest.TestCase):
+    def setUp(self):
+        self.deck = create_deck()
+
+    def test_invertability(self):
+        self.assertEqual(self.deck, [C(card_repr(card)) for card in self.deck])
+
 
 class Decks(unittest.TestCase):
     def setUp(self):

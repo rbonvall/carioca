@@ -10,6 +10,40 @@ RANKS = range(1, 14)
 
 Card = namedtuple('Card', ['rank', 'suit'])
 
+class InvalidRank(Exception): pass
+class InvalidSuit(Exception): pass
+
+
+def C(r):
+    '''Convenient constructor for cards from a string argument.
+
+    >>> C(u'2♥')
+    Card(rank=2, suit=u'\\u2665')
+    >>> C(u'K♠')
+    Card(rank=13, suit=u'\\u2660')
+    >>> C(u'10♣')
+    Card(rank=10, suit=u'\\u2663')
+    >>> C(u'JOKER')
+    Card(rank=0, suit=None)
+    '''
+
+    r = unicode(r).strip().upper()
+    if r.upper().startswith((u'JO', u'JK')):
+        return Card(JOKER, None)
+    rank_repr, suit = r[:-1], r[-1]
+    if suit not in SUITES:
+        raise InvalidSuit(u'%s is not a valid suit' % suit)
+    letter_values = {u'A': A, u'J': J, u'Q': Q, u'K': K, u'D': 10, u'T': 10}
+    if rank_repr in letter_values:
+        rank = letter_values[rank_repr]
+    else:
+        rank = int(rank_repr)
+    if rank not in RANKS:
+        raise InvalidRank(u'%s is not a valid rank' % rank)
+
+    return Card(rank, suit)
+
+
 def card_repr(card):
     if card.rank == JOKER:
         return u'JOKER'
@@ -21,8 +55,6 @@ def card_repr(card):
         r = unicode(card.rank)
     return u'%s%s' % (r, card.suit)
 
-
-class InvalidRank(Exception): pass
 
 def value(card):
     if 2 <= card.rank <= 10:
