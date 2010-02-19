@@ -1,37 +1,30 @@
+# vim: set fileencoding=utf-8:
+
 from carioca import *
 import unittest
 
 class Trios(unittest.TestCase):
     # valid trios
     def test_trio_different_suites(self):
-        cards = [Card(A, SPADES), Card(A, HEARTS), Card(A, DIAMONDS)]
-        self.assertTrue(is_trio(cards))
+        self.assertTrue(is_trio(Cs(u'A♠ A♥ A♦')))
     def test_trio_one_repeated_suit(self):
-        cards = [Card(7, CLUBS), Card(7, SPADES), Card(7, CLUBS)]
-        self.assertTrue(is_trio(cards))
+        self.assertTrue(is_trio(Cs(u'7♣ 7♠ 7♣')))
     def test_just_one_suit(self):
-        cards = [Card(K, HEARTS), Card(K, HEARTS), Card(K, HEARTS)]
-        self.assertTrue(is_trio(cards))
+        self.assertTrue(is_trio(Cs(u'K♥ K♥ K♥')))
     def test_joker_at_beginning(self):
-        cards = [Card(JOKER, None), Card(10, SPADES), Card(10, DIAMONDS)]
-        self.assertTrue(is_trio(cards))
+        self.assertTrue(is_trio(Cs(u'jkr 10♠ 10♦')))
     def test_joker_in_the_middle(self):
-        cards = [Card(2, DIAMONDS), Card(JOKER, None), Card(2, CLUBS)]
-        self.assertTrue(is_trio(cards))
+        self.assertTrue(is_trio(Cs(u'2♦ jkr 2♣')))
 
     # invalid trios
     def test_three_different_ranks(self):
-        cards = [Card(2, DIAMONDS), Card(5, SPADES), Card(J, CLUBS)]
-        self.assertFalse(is_trio(cards))
+        self.assertFalse(is_trio(Cs(u'2♦ 5♠ J♣')))
     def test_two_different_ranks(self):
-        cards = [Card(Q, SPADES), Card(A, HEARTS), Card(Q, HEARTS)]
-        self.assertFalse(is_trio(cards))
+        self.assertFalse(is_trio(Cs(u'Q♠ A♥ Q♥')))
     def test_two_jokers(self):
-        cards = [Card(10, HEARTS), Card(JOKER, None), Card(JOKER, None)]
-        self.assertFalse(is_trio(cards))
+        self.assertFalse(is_trio(Cs(u'10♥ jkr jkr')))
     def test_three_jokers(self):
-        cards = [Card(JOKER, None), Card(JOKER, None), Card(JOKER, None)]
-        self.assertFalse(is_trio(cards))
+        self.assertFalse(is_trio(Cs(u'jkr jkr jkr')))
 
 
 class ConstructorAndRepr(unittest.TestCase):

@@ -44,6 +44,11 @@ def C(r):
     return Card(rank, suit)
 
 
+def Cs(r):
+    'Convenient constructor for a list of cards'
+    return map(C, r.split())
+
+
 def card_repr(card):
     if card.rank == JOKER:
         return u'JOKER'
