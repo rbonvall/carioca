@@ -76,16 +76,26 @@ def create_deck():
     jokers = [Card(JOKER, None)] * 2
     return [Card(rank, suit) for rank in RANKS for suit in SUITS] + jokers
 
-def is_trio(cards):
-    nr_jokers = len([card for card in cards if card.rank == JOKER])
-    different_ranks = set(card.rank for card in cards if card.rank != JOKER)
-    return (len(cards) == 3 and len(different_ranks) == 1 and nr_jokers <= 1)
-
-def is_straight(cards):
-    nr_jokers = len([card for card in cards if card.rank == JOKER])
-    different_suits = set(card.suit for card in cards if card.rank != JOKER)
+def are_ranks_consecutive(cards):
     straight_ranks = set((card.rank - n) % 13
                          for n, card in enumerate(cards) if card.rank != JOKER)
-    return (len(cards) == 4 and len(different_suits) == 1 and
-            len(straight_ranks) == 1 and nr_jokers <= 1)
+    return len(straight_ranks) <= 1
+
+def are_suits_equal(cards):
+    different_suits = set(card.suit for card in cards if card.rank != JOKER)
+    return len(different_suits) <= 1
+
+def are_ranks_equal(cards):
+    different_ranks = set(card.rank for card in cards if card.rank != JOKER)
+    return len(different_ranks) <= 1
+
+def count_jokers(cards):
+    return len([card for card in cards if card.rank == JOKER])
+
+def is_trio(cards):
+    return (len(cards) == 3 and are_ranks_equal(cards) and count_jokers(cards) <= 1)
+
+def is_straight(cards):
+    return (len(cards) == 4 and are_suits_equal(cards) and
+            are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
 
