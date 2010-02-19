@@ -81,3 +81,11 @@ def is_trio(cards):
     different_ranks = set(card.rank for card in cards if card.rank != JOKER)
     return (len(cards) == 3 and len(different_ranks) == 1 and nr_jokers <= 1)
 
+def is_straight(cards):
+    nr_jokers = len([card for card in cards if card.rank == JOKER])
+    different_suits = set(card.suit for card in cards if card.rank != JOKER)
+    straight_ranks = set((card.rank - n) % 13
+                         for n, card in enumerate(cards) if card.rank != JOKER)
+    return (len(cards) == 4 and len(different_suits) == 1 and
+            len(straight_ranks) == 1 and nr_jokers <= 1)
+
