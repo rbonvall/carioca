@@ -1,6 +1,7 @@
 # vim: set fileencoding=utf-8:
 
 from collections import namedtuple
+from random import shuffle
 
 JOKER = 0
 A, J, Q, K = 1, 11, 12, 13
@@ -110,4 +111,63 @@ def is_trio(cards):
 def is_straight(cards):
     return (len(cards) == 4 and are_suits_equal(cards) and
             are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
+
+
+class GameRound(object):
+    def __init__(self, nr_players,
+                 nr_trios=0, nr_straights=0, nr_royal_straights=0,
+                 first_turn=0, nr_decks=2):
+        self.nr_trios = nr_trios
+        self.nr_straights = nr_straights
+        self.nr_royal_straights = nr_royal_straights
+        self.nr_players = nr_players
+        self.nr_decks = nr_decks
+
+        self.stack = nr_decks * create_deck()
+        shuffle(self.stack)
+        self.hands = [[self.stack.pop() for _ in range(12)]
+                      for player in range(nr_players)]
+        self.lowered_sets = [[[] for _ in range(nr_trios + nr_straights + nr_royal_straights)]
+                             for pl in range(nr_players)]
+        self.well = [self.stack.pop()]
+        self.player_in_turn = first_turn
+        self.card_taken = False
+
+    def take_from_well():
+        'Make the player in turn take a card from the well'
+        pass
+        # [...]
+        self.card_taken = True
+
+    def take_from_stack():
+        'Make the player in turn take a card from the stack'
+        pass
+        # [...]
+        self.card_taken = True
+
+    def lower(trios=None, straights=None, royal_straights=None):
+        'Make the player in turn lower her hands'
+        pass
+
+    def drop_to_well(card):
+        'Make the player in turn end his turn by dropping a card to the well'
+        pass
+        # [...]
+        self.card_taken = False
+        self.player_in_turn += 1
+        self.player_in_turn %= self.nr_players
+
+    def discard_to(card, player, lowered_set):
+        'Make the player in turn discard one hand to a lowered_set'
+        pass
+
+    def _hands_repr(self):
+        return [' '.join(map(card_repr, hand)) for hand in self.hands]
+
+    def __repr__(self):
+        round = ('ER' if self.nr_royal_straights
+                      else '%dT %dE' % (self.nr_trios, self.nr_straights))
+        return '<%s instance, %d players, %s, %d decks>' % (
+                self.__class__.__name__, self.nr_players, round, self.nr_decks)
+
 
