@@ -5,7 +5,7 @@ from collections import namedtuple
 JOKER = 0
 A, J, Q, K = 1, 11, 12, 13
 MONKEYS = (J, Q, K)
-SUITES = (SPADES, HEARTS, CLUBS, DIAMONDS) = u'♠♥♣♦'
+SUITS = (SPADES, HEARTS, CLUBS, DIAMONDS) = u'♠♥♣♦'
 RANKS = range(1, 14)
 
 Card = namedtuple('Card', ['rank', 'suit'])
@@ -31,7 +31,7 @@ def C(r):
     if r.upper().startswith((u'JO', u'JK')):
         return Card(JOKER, None)
     rank_repr, suit = r[:-1], r[-1]
-    if suit not in SUITES:
+    if suit not in SUITS:
         raise InvalidSuit(u'%s is not a valid suit' % suit)
     letter_values = {u'A': A, u'J': J, u'Q': Q, u'K': K, u'D': 10, u'T': 10}
     if rank_repr in letter_values:
@@ -74,7 +74,7 @@ def value(card):
 
 def create_deck():
     jokers = [Card(JOKER, None)] * 2
-    return [Card(rank, suit) for rank in RANKS for suit in SUITES] + jokers
+    return [Card(rank, suit) for rank in RANKS for suit in SUITS] + jokers
 
 def is_trio(cards):
     nr_jokers = len([card for card in cards if card.rank == JOKER])

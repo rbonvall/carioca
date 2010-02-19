@@ -5,7 +5,7 @@ import unittest
 
 class Trios(unittest.TestCase):
     # valid trios
-    def test_trio_different_suites(self):
+    def test_trio_different_suits(self):
         self.assertTrue(is_trio(Cs(u'A♠ A♥ A♦')))
     def test_trio_one_repeated_suit(self):
         self.assertTrue(is_trio(Cs(u'7♣ 7♠ 7♣')))
@@ -47,9 +47,9 @@ class Decks(unittest.TestCase):
     def test_nr_ranks(self):
         ranks = set(card.rank for card in self.deck)
         self.assertEqual(len(ranks), 14)
-    def test_all_suites_present(self):
-        suites = set(card.suit for card in self.deck if card.suit)
-        self.assertEqual(len(suites), 4)
+    def test_all_suits_present(self):
+        suits = set(card.suit for card in self.deck if card.suit)
+        self.assertEqual(len(suits), 4)
 
 
 if __name__ == "__main__":
