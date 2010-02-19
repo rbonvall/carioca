@@ -102,5 +102,49 @@ class Decks(unittest.TestCase):
         self.assertEqual(len(suits), 4)
 
 
+class GameRoundSimpleOperations(unittest.TestCase):
+    def setUp(self):
+        self.g = GameRound(nr_players=4,
+                           nr_trios=1, nr_straights=1,
+                           first_turn=3, nr_decks=1)
+
+    def test_card_peeking(self):
+        well = self.g.well
+        well_size_before = len(well)
+        card = self.g.peek_well_card()
+        well_size_after = len(well)
+        self.assertEqual(card, self.g.well[-1])
+        self.assertEqual(well_size_before, well_size_after)
+
+    def _simulate_turn_with_take_function(self, take_fn):
+        '''Simulate a turn with a given function
+        to take a card (one of take_from_{stack,well})'''
+
+        current_player = self.g.player_in_turn
+        hand = self.g.hands[current_player]
+        nr_cards_before = len(hand)
+
+        card = take_fn()
+        nr_cards_during = len(hand)
+        self.assert_(card in hand)
+
+        card_to_drop = hand[0]
+        self.g.drop_to_well(card_to_drop)
+        nr_cards_after = len(hand)
+        self.assertEqual(nr_cards_during, nr_cards_before + 1)
+        self.assertEqual(nr_cards_before, nr_cards_after)
+        self.assertEqual(card_to_drop, self.g.peek_well_card())
+        self.assertNotEqual(current_player, self.g.player_in_turn)
+
+    def test_turn_taking_from_well(self):
+        self._simulate_turn_with_take_function(self.g.take_from_well)
+
+    def test_turn_taking_from_stack(self):
+        self._simulate_turn_with_take_function(self.g.take_from_stack)
+
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
