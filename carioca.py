@@ -13,8 +13,8 @@ LETTER_RANKS = {u'A': A, u'J': J, u'Q': Q, u'K': K, u'D': 10, u'T': 10}
 
 Card = namedtuple('Card', ['rank', 'suit'])
 
-class InvalidRank(Exception): pass
-class InvalidSuit(Exception): pass
+class InvalidRank(ValueError): pass
+class InvalidSuit(ValueError): pass
 
 
 def C(r):
