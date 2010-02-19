@@ -16,6 +16,7 @@ Card = namedtuple('Card', ['rank', 'suit'])
 
 class InvalidRank(ValueError): pass
 class InvalidSuit(ValueError): pass
+class GameRoundException(StandardError): pass
 
 
 def C(r):
@@ -133,32 +134,51 @@ class GameRound(object):
         self.player_in_turn = first_turn
         self.card_taken = False
 
-    def take_from_well():
+    def peek_well_card(self):
+        'Peek the card can be taken from the well, without taking it'
+
+        return self.well[-1]
+
+    def take_from_well(self):
         'Make the player in turn take a card from the well'
-        pass
-        # [...]
-        self.card_taken = True
 
-    def take_from_stack():
+        taken_card = self.well.pop()
+        self.hands[self.player_in_turn].append(taken_card)
+        self.card_taken = True
+        return taken_card
+
+    def take_from_stack(self):
         'Make the player in turn take a card from the stack'
-        pass
-        # [...]
-        self.card_taken = True
 
-    def lower(trios=None, straights=None, royal_straights=None):
+        taken_card = self.stack.pop()
+        self.hands[self.player_in_turn].append(taken_card)
+        self.card_taken = True
+        return taken_card
+
+    def lower(self, trios=None, straights=None, royal_straights=None):
         'Make the player in turn lower her hands'
         pass
 
-    def drop_to_well(card):
+    def drop_to_well(self, card):
         'Make the player in turn end his turn by dropping a card to the well'
-        pass
-        # [...]
+
+        if not self.card_taken:
+            raise GameRoundException('Player %d must take a card before dropping' % self.player_in_turn)
+        hand = self.hands[self.player_in_turn]
+        if card not in hand:
+            raise GameRoundException("%s is not in player %d's hand" % (card, self.player_in_turn))
+
+        # drop the card
+        self.well.append(card)
+        hand.remove(card)
+
+        # end the turn
         self.card_taken = False
         self.player_in_turn += 1
         self.player_in_turn %= self.nr_players
 
-    def discard_to(card, player, lowered_set):
-        'Make the player in turn discard one hand to a lowered_set'
+    def give_to(self, card, player, lowered_set):
+        'Make the player in turn give one of her cards to a lowered hand'
         pass
 
     def _hands_repr(self):
