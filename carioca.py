@@ -8,6 +8,9 @@ MONKEYS = (J, Q, K)
 SUITS = (SPADES, HEARTS, CLUBS, DIAMONDS) = u'♠♥♣♦'
 RANKS = range(1, 14)
 
+LETTER_REPRS = {A: u'A', J: u'J', Q: u'Q', K: u'K'}
+LETTER_RANKS = {u'A': A, u'J': J, u'Q': Q, u'K': K, u'D': 10, u'T': 10}
+
 Card = namedtuple('Card', ['rank', 'suit'])
 
 class InvalidRank(Exception): pass
@@ -33,9 +36,8 @@ def C(r):
     rank_repr, suit = r[:-1], r[-1]
     if suit not in SUITS:
         raise InvalidSuit(u'%s is not a valid suit' % suit)
-    letter_values = {u'A': A, u'J': J, u'Q': Q, u'K': K, u'D': 10, u'T': 10}
-    if rank_repr in letter_values:
-        rank = letter_values[rank_repr]
+    if rank_repr in LETTER_RANKS:
+        rank = LETTER_RANKS[rank_repr]
     else:
         rank = int(rank_repr)
     if rank not in RANKS:
@@ -52,10 +54,8 @@ def Cs(r):
 def card_repr(card):
     if card.rank == JOKER:
         return u'JOKER'
-    if   card.rank == A: r = u'A'
-    elif card.rank == J: r = u'J'
-    elif card.rank == Q: r = u'Q'
-    elif card.rank == K: r = u'K'
+    if card.rank in LETTER_REPRS:
+        r = LETTER_REPRS[card.rank]
     else:
         r = unicode(card.rank)
     return u'%s%s' % (r, card.suit)
