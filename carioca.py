@@ -18,6 +18,8 @@ class InvalidRank(ValueError): pass
 class InvalidSuit(ValueError): pass
 class GameRoundException(StandardError): pass
 
+def is_joker(card):
+    return card.rank == JOKER
 
 def C(r):
     u'''Convenient constructor for cards from a string argument.
@@ -66,7 +68,7 @@ def card_repr(card):
     u'JOKER'
     '''
 
-    if card.rank == JOKER:
+    if is_joker(card):
         return u'JOKER'
     if card.rank in LETTER_REPRS:
         r = LETTER_REPRS[card.rank]
@@ -82,7 +84,7 @@ def value(card):
         return 10
     if card.rank == A:
         return 20
-    if card.rank == JOKER:
+    if is_joker(card):
         return 30
     raise InvalidRank('%d is not a valid rank' % card.rank)
 
@@ -92,19 +94,19 @@ def create_deck():
 
 def are_ranks_consecutive(cards):
     straight_ranks = set((card.rank - n) % 13
-                         for n, card in enumerate(cards) if card.rank != JOKER)
+                         for n, card in enumerate(cards) if not is_joker(card))
     return len(straight_ranks) <= 1
 
 def are_suits_equal(cards):
-    different_suits = set(card.suit for card in cards if card.rank != JOKER)
+    different_suits = set(card.suit for card in cards if not is_joker(card))
     return len(different_suits) <= 1
 
 def are_ranks_equal(cards):
-    different_ranks = set(card.rank for card in cards if card.rank != JOKER)
+    different_ranks = set(card.rank for card in cards if not is_joker(card))
     return len(different_ranks) <= 1
 
 def count_jokers(cards):
-    return len([card for card in cards if card.rank == JOKER])
+    return len([card for card in cards if is_joker(card)])
 
 def is_trio(cards):
     return (len(cards) == 3 and are_ranks_equal(cards) and count_jokers(cards) <= 1)
