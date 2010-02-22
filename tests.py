@@ -76,6 +76,29 @@ class Straights(unittest.TestCase):
     def test_too_long(self):
         self.assertFalse(is_straight(Cs(u'3♠ 4♠ 5♠ 6♠ 7♠')))
 
+class CardSubsets(unittest.TestCase):
+    # valid subsets
+    def test_empty_subset(self):
+        self.assertTrue(is_card_subset(Cs(u''), Cs(u'3♥ 5♠ 6♦ J♦')))
+    def test_full_subset(self):
+        self.assertTrue(is_card_subset(Cs(u'3♥ 5♠ 6♦ J♦'), Cs(u'3♥ 5♠ 6♦ J♦')))
+    def test_ordinary_subset(self):
+        self.assertTrue(is_card_subset(Cs(u'J♦ 5♠'), Cs(u'3♥ 5♠ 6♦ J♦')))
+    def test_repeated_card_in_superset(self):
+        self.assertTrue(is_card_subset(Cs(u'10♥ A♠'), Cs(u'A♠ 5♦ Q♣ A♠ 10♥')))
+    def test_repeated_card_in_subset_and_superset(self):
+        self.assertTrue(is_card_subset(Cs(u'10♥ A♠ A♠'), Cs(u'A♠ 5♦ Q♣ A♠ 10♥')))
+
+    # invalid subsets
+    def test_one_card_not_in_superset(self):
+        self.assertFalse(is_card_subset(Cs(u'10♥ 3♠ 2♣'), Cs(u'3♠ 10♥ 10♥ K♠')))
+    def test_all_cards_not_in_superset(self):
+        self.assertFalse(is_card_subset(Cs(u'jkr 3♠ K♦ 2♣'), Cs(u'Q♦ A♠ Q♦ 7♥')))
+    def test_empty_superset(self):
+        self.assertFalse(is_card_subset(Cs(u'6♣ 7♣ 8♦'), Cs(u'')))
+    def test_repeated_card_in_subset(self):
+        self.assertFalse(is_card_subset(Cs(u'Q♥ 4♠ Q♥'), Cs(u'4♠ J♦ J♦ Q♥')))
+
 
 class ConstructorAndRepr(unittest.TestCase):
     def setUp(self):

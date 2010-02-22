@@ -1,6 +1,6 @@
 # vim: set fileencoding=utf-8:
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from random import shuffle
 
 JOKER = 0
@@ -112,6 +112,24 @@ def is_trio(cards):
 def is_straight(cards):
     return (len(cards) == 4 and are_suits_equal(cards) and
             are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
+
+def is_card_subset(subset, superset):
+    '''Check whether all cards in subset are in superset'''
+
+    # in python 2.7 and 3.1, this will be simply:
+    # subset_counter   = collections.Counter(subset_counter)
+    # superset_counter = collections.Counter(superset_counter)
+
+    subset_counter = defaultdict(int)
+    for card in subset:
+        subset_counter[card] += 1
+
+    superset_counter = defaultdict(int)
+    for card in superset:
+        superset_counter[card] += 1
+
+    return all(subset_counter[card] <= superset_counter[card]
+               for card in subset_counter)
 
 
 class GameRound(object):
