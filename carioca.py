@@ -35,7 +35,7 @@ def C(r):
     '''
 
     r = unicode(r).strip().upper()
-    if r.upper().startswith((u'JO', u'JK')):
+    if r.startswith((u'JO', u'JK')):
         return Card(JOKER, None)
     rank_repr, suit = r[:-1], r[-1]
     if suit not in SUITS:
