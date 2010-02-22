@@ -113,6 +113,15 @@ def is_straight(cards):
     return (len(cards) == 4 and are_suits_equal(cards) and
             are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
 
+def can_give_to_trio(card):
+    pass
+
+def can_give_to_straight_at_left(card):
+    pass
+
+def can_give_to_straight_at_right(card):
+    pass
+
 def is_card_subset(subset, superset):
     '''Check whether all cards in subset are in superset'''
 
