@@ -155,8 +155,10 @@ class GameRound(object):
         shuffle(self.stack)
         self.hands = [[self.stack.pop() for _ in range(12)]
                       for player in range(nr_players)]
-        self.lowered_sets = [[[] for _ in range(nr_trios + nr_straights + nr_royal_straights)]
-                             for pl in range(nr_players)]
+        self.lowered_trios = [[[] for _ in range(nr_trios)]
+                              for pl in range(nr_players)]
+        self.lowered_straights = [[[] for _ in range(nr_trios)]
+                                  for pl in range(nr_players)]
         self.well = [self.stack.pop()]
         self.player_in_turn = first_turn
         self.card_taken = False
@@ -184,7 +186,14 @@ class GameRound(object):
 
     def lower(self, trios=None, straights=None, royal_straights=None):
         'Make the player in turn lower her hands'
-        pass
+
+        if self.nr_trios:
+            if any(not is_trio(cards) for cards in trios):
+                raise GameRoundException('Invalid trio in %s' % str(cards))
+        if self.nr_straights:
+            if any(not is_straight(cards) for cards in straights):
+                raise GameRoundException('Invalid straight in %s' % str(cards))
+        hand = self.hands[self.player_in_turn]
 
     def drop_to_well(self, card):
         'Make the player in turn end his turn by dropping a card to the well'
