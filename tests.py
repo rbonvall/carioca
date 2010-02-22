@@ -166,6 +166,13 @@ class GameRoundSimpleOperations(unittest.TestCase):
         self._simulate_turn_with_take_function(self.g.take_from_stack)
 
 
+class Lowering(unittest.TestCase):
+    def setUp(self):
+        g = GameRound(nr_players=2, nr_trios=2, nr_straights=1)
+
+        # cook hands
+        g.hands = [Cs(u'5♣ 6♣ 7♣ 8♣   2♥ 2♠ jkr  J♦ J♥ J♦   Q♠ A♣'),
+                   Cs(u'3♥ 4♥ 5♥ jkr  A♠ A♣ A♥   7♠ 7♣ 7♦  10♣ K♦')]
 
 
 
