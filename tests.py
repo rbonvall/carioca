@@ -201,9 +201,22 @@ class Lowering(unittest.TestCase):
         self.assertEqual(len(self.g.lowered_trios[player][0]), 3)
         self.assertEqual(len(self.g.lowered_trios[player][1]), 3)
         self.assertEqual(len(self.g.lowered_straights[player][0]), 4)
+        self.g.drop_to_well(C(u'Q♠'))
+
+        self.g.take_from_well()
+        player = self.g.player_in_turn
+        self.assertEqual(player, 1)
+
+        # lower as God intended
+        self.g.lower(trios=[Cs(u'A♠ A♣ A♥'), Cs(u'7♠ 7♣ 7♦')],
+                     straights=[Cs(u'3♥ 4♥ 5♥ jkr')])
+        self.assertEqual(len(self.g.hands[player]), 3)
+        self.assertEqual(len(self.g.lowered_trios[player][0]), 3)
+        self.assertEqual(len(self.g.lowered_trios[player][1]), 3)
+        self.assertEqual(len(self.g.lowered_straights[player][0]), 4)
+        self.g.drop_to_well(C(u'10♣'))
 
         # TODO: improve this test
-
 
 
 
