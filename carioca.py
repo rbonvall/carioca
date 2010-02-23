@@ -157,10 +157,9 @@ class GameRound(object):
         shuffle(self.stack)
         self.hands = [[self.stack.pop() for _ in range(12)]
                       for player in range(nr_players)]
-        self.lowered_trios = [[[] for _ in range(nr_trios)]
-                              for pl in range(nr_players)]
-        self.lowered_straights = [[[] for _ in range(nr_trios)]
-                                  for pl in range(nr_players)]
+        self.lowered_trios = [None for pl in range(nr_players)]
+        self.lowered_straights = [None for pl in range(nr_players)]
+        self.did_lower = [False for pl in range(nr_players)]
         self.well = [self.stack.pop()]
         self.player_in_turn = first_turn
         self.card_taken = False
@@ -192,10 +191,34 @@ class GameRound(object):
         if self.nr_trios:
             if any(not is_trio(cards) for cards in trios):
                 raise GameRoundException('Invalid trio in %s' % str(cards))
+            if len(trios) != self.nr_trios:
+                raise GameRoundException('%d trios are needed, only %d provided' %
+                                         (self.nr_trios, len(trios)))
         if self.nr_straights:
             if any(not is_straight(cards) for cards in straights):
                 raise GameRoundException('Invalid straight in %s' % str(cards))
-        hand = self.hands[self.player_in_turn]
+            if len(straights) != self.nr_straights:
+                raise GameRoundException('%d straights are needed, only %d provided' %
+                                         (self.nr_straights, len(straights)))
+        if not self.card_taken:
+            raise GameRoundException('A card must be taken before lowering')
+
+        player = self.player_in_turn
+        if self.did_lower[player]:
+            raise GameRoundException('Player %d already lowered' % player)
+
+        hand = self.hands[player]
+        cards_to_lower = [card for item in (trios, straights)
+                               for cards in item
+                               for card in cards]
+        if not is_card_subset(cards_to_lower, hand):
+            raise GameRoundException('Not all cards are in hand')
+        self.lowered_trios[player] = trios
+        self.lowered_straights[player] = straights
+        for card in cards_to_lower:
+            hand.remove(card)
+        self.did_lower[player] = True
+
 
     def drop_to_well(self, card):
         'Make the player in turn end his turn by dropping a card to the well'

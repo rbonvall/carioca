@@ -169,10 +169,41 @@ class GameRoundSimpleOperations(unittest.TestCase):
 class Lowering(unittest.TestCase):
     def setUp(self):
         g = GameRound(nr_players=2, nr_trios=2, nr_straights=1)
+        g.hands = [Cs(u'5♣ 6♣ 7♣ 8♣   2♥ 2♠ jkr  J♦ J♥   10♦ Q♠ A♣'),
+                   Cs(u'3♥ 4♥ 5♥ jkr  A♠ A♣ A♥   7♠ 7♣ 7♦   10♣ K♦')]
+        g.well = Cs(u'J♦')
+        self.g = g
 
-        # cook hands
-        g.hands = [Cs(u'5♣ 6♣ 7♣ 8♣   2♥ 2♠ jkr  J♦ J♥ J♦   Q♠ A♣'),
-                   Cs(u'3♥ 4♥ 5♥ jkr  A♠ A♣ A♥   7♠ 7♣ 7♦  10♣ K♦')]
+    def test_lowering(self):
+        self.g.take_from_well()
+        player = self.g.player_in_turn
+        self.assertEqual(player, 0)
+
+        # attempt to lowering without having one of the cards (2♣)
+        self.assertRaises(GameRoundException, self.g.lower,
+                          **dict(trios=[Cs(u'2♥ 2♠ 2♣'), Cs(u'J♦ J♥ J♦')],
+                                 straights=[Cs(u'5♣ 6♣ 7♣ 8♣')]))
+
+        # attempt to lowering with wrong number of items
+        self.assertRaises(GameRoundException, self.g.lower,
+                          **dict(trios=[Cs(u'2♥ 2♠ 2♣')],
+                                 straights=[Cs(u'5♣ 6♣ 7♣ 8♣')]))
+
+        # attempt to lowering with wrong number of items
+        self.assertRaises(GameRoundException, self.g.lower,
+                          **dict(trios=[Cs(u'2♥ 2♠ 2♣')],
+                                 straights=[Cs(u'5♣ 6♣ 7♣ 8♣')]))
+
+        # lower as God intended
+        self.g.lower(trios=[Cs(u'2♠ jkr 2♥'), Cs(u'J♦ J♦ J♥')],
+                     straights=[Cs(u'5♣ 6♣ 7♣ 8♣')])
+        self.assertEqual(len(self.g.hands[player]), 3)
+        self.assertEqual(len(self.g.lowered_trios[player][0]), 3)
+        self.assertEqual(len(self.g.lowered_trios[player][1]), 3)
+        self.assertEqual(len(self.g.lowered_straights[player][0]), 4)
+
+        # TODO: improve this test
+
 
 
 
