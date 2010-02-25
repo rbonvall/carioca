@@ -142,6 +142,21 @@ def is_card_subset(subset, superset):
     return all(subset_counter[card] <= superset_counter[card]
                for card in subset_counter)
 
+class Player(object):
+    def __init__(self, name):
+        self.name = name
+        self.hand = []
+        self.trios = []
+        self.straights = []
+
+    def clear(self):
+        self.hand[:] = []
+        self.trios[:] = []
+        self.straights[:] = []
+
+    def deal(self, cards):
+        self.hand.extend(cards)
+
 
 class GameRound(object):
     def __init__(self, nr_players,
