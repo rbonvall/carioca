@@ -157,6 +157,9 @@ class Player(object):
     def deal(self, cards):
         self.hand.extend(cards)
 
+    def __repr__(self):
+        return '<Player %s>' % self.name
+
 
 class GameRound(object):
     def __init__(self, nr_players,
