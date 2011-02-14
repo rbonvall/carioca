@@ -17,6 +17,7 @@ Card = namedtuple('Card', ['rank', 'suit'])
 class InvalidRank(ValueError): pass
 class InvalidSuit(ValueError): pass
 class GameRoundException(StandardError): pass
+class InvalidMoveException(StandardError): pass
 
 def is_joker(card):
     return card.rank == JOKER
@@ -76,6 +77,8 @@ def card_repr(card):
         r = unicode(card.rank)
     return u'%s%s' % (r, card.suit)
 
+def card_set_repr(cards):
+    return u'[' + ','.join(map(card_repr, cards)) + u']'
 
 def value(card):
     if 2 <= card.rank <= 10:
@@ -115,14 +118,27 @@ def is_straight(cards):
     return (len(cards) == 4 and are_suits_equal(cards) and
             are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
 
-def can_give_to_trio(card):
-    pass
+def can_give_to_trio(card, trio):
+    return are_ranks_equal(trio + [card])
 
-def can_give_to_straight_at_left(card):
-    pass
+def has_jokers_too_close(cards):
+    lastJoker = None
+    for n, card in enumerate(cards):
+        if is_joker(card):
+            if lastJoker is not None and n - lastJoker <= 2:
+                return True
+            lastJoker = n
+    return False
 
-def can_give_to_straight_at_right(card):
-    pass
+def can_give_to_straight_at_left(card, straight):
+    cards = [card] + straight
+    return (not has_jokers_too_close(cards) and are_suits_equal(cards)
+            and are_ranks_consecutive(cards))
+
+def can_give_to_straight_at_right(card, straight):
+    cards = straight + [card]
+    return (not has_jokers_too_close(cards) and are_suits_equal(cards)
+            and are_ranks_consecutive(cards))
 
 def is_card_subset(subset, superset):
     '''Check whether all cards in subset are in superset'''
@@ -178,6 +194,7 @@ class GameRound(object):
         self.lowered_trios = [None for pl in range(nr_players)]
         self.lowered_straights = [None for pl in range(nr_players)]
         self.did_lower = [False for pl in range(nr_players)]
+        self.played_first_turn = [False for pl in range(nr_players)]
         self.well = [self.stack.pop()]
         self.player_in_turn = first_turn
         self.card_taken = False
@@ -190,6 +207,9 @@ class GameRound(object):
     def take_from_well(self):
         'Make the player in turn take a card from the well'
 
+        if self.card_taken:
+            raise InvalidMoveException('Cannot take another card, already took one')
+
         taken_card = self.well.pop()
         self.hands[self.player_in_turn].append(taken_card)
         self.card_taken = True
@@ -198,13 +218,27 @@ class GameRound(object):
     def take_from_stack(self):
         'Make the player in turn take a card from the stack'
 
+        if self.card_taken:
+            raise InvalidMoveException('Cannot take another card, already took one')
+
         taken_card = self.stack.pop()
         self.hands[self.player_in_turn].append(taken_card)
         self.card_taken = True
         return taken_card
 
-    def lower(self, trios=None, straights=None, royal_straights=None):
+    def lower(self, trios=[], straights=[], royal_straights=[]):
         'Make the player in turn lower her hands'
+
+        if not self.card_taken:
+            raise InvalidMoveException('Cannot lower without taking a card first')
+
+        player = self.player_in_turn
+
+        if not self.played_first_turn[self.player_in_turn]:
+            raise InvalidMoveException('Cannot lower during the first turn, have to wait until the second at least')
+
+        if self.did_lower[player]:
+            raise GameRoundException('Player %d already lowered' % player)
 
         if self.nr_trios:
             if any(not is_trio(cards) for cards in trios):
@@ -221,11 +255,8 @@ class GameRound(object):
         if not self.card_taken:
             raise GameRoundException('A card must be taken before lowering')
 
-        player = self.player_in_turn
-        if self.did_lower[player]:
-            raise GameRoundException('Player %d already lowered' % player)
-
         hand = self.hands[player]
+
         cards_to_lower = [card for item in (trios, straights)
                                for cards in item
                                for card in cards]
@@ -242,10 +273,10 @@ class GameRound(object):
         'Make the player in turn end his turn by dropping a card to the well'
 
         if not self.card_taken:
-            raise GameRoundException('Player %d must take a card before dropping' % self.player_in_turn)
+            raise InvalidMoveException('Player %d must take a card before dropping' % self.player_in_turn)
         hand = self.hands[self.player_in_turn]
         if card not in hand:
-            raise GameRoundException("%s is not in player %d's hand" % (card, self.player_in_turn))
+            raise GameRoundException("%s is not in player %d's hand" % (card_repr(card), self.player_in_turn))
 
         # drop the card
         self.well.append(card)
@@ -253,15 +284,67 @@ class GameRound(object):
 
         # end the turn
         self.card_taken = False
+        self.played_first_turn[self.player_in_turn] = True
         self.player_in_turn += 1
         self.player_in_turn %= self.nr_players
 
-    def give_to(self, card, player, lowered_set):
+    def give_to(self, card, player, lowered_set, where=None):
         'Make the player in turn give one of her cards to a lowered hand'
-        pass
+
+        if not self.card_taken:
+            raise InvalidMoveException('Cannot give cards without taking a card first')
+
+        # Players that haven't lowered any cards can't give cards
+        if not self.did_lower[self.player_in_turn]:
+            raise InvalidMoveException('Player %d hasn\'n lowered yet' % player)
+
+        # Check that given card is in the current player's hand
+        hand = self.hands[self.player_in_turn]
+        if card not in hand:
+            raise GameRoundException("%s is not in player %d's hand" % (card_repr(card), self.player_in_turn))
+
+        # Check that given lowered set in in the given player's lowered sets
+        found = False
+        if self.lowered_trios[player] is not None:
+            for sset in self.lowered_trios[player]:
+                if is_card_subset(lowered_set, sset) and len(lowered_set) == len(sset):
+                    lowered_set = sset
+                    found = True
+                    break
+        if not found:
+            if self.lowered_straights[player] is not None:
+                for sset in self.lowered_straights[player]:
+                    if is_card_subset(lowered_set, sset) and len(lowered_set) == len(sset):
+                        lowered_set = sset
+                        found = True
+                        break
+        if not found:
+            raise GameRoundException("Given set of cards %s not in player %d's lowered sets" % (lowered_set, player))
+
+        # Give card
+        if can_give_to_trio(card, lowered_set):
+            lowered_set.append(card)
+            hand.remove(card)
+        elif (where is None or where == 'left') and can_give_to_straight_at_left(card, lowered_set):
+            lowered_set.insert(0,card)
+            hand.remove(card)
+        elif (where is None or where == 'right') and can_give_to_straight_at_right(card, lowered_set):
+            lowered_set.append(card)
+            hand.remove(card)
+        else:
+            raise GameRoundException("Cannot put %s in the lowered set %s of player %d" % (card_repr(card), lowered_set, player))
+
 
     def _hands_repr(self):
         return [' '.join(map(card_repr, hand)) for hand in self.hands]
+
+    def is_over(self):
+        'Checks if the current game round is over'
+
+        for hand in self.hands:
+            if len(hand) == 0:
+                return True
+        return False
 
     def __repr__(self):
         round = ('ER' if self.nr_royal_straights

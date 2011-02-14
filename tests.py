@@ -76,6 +76,114 @@ class Straights(unittest.TestCase):
     def test_too_long(self):
         self.assertFalse(is_straight(Cs(u'3♠ 4♠ 5♠ 6♠ 7♠')))
 
+class Joker(unittest.TestCase):
+    def test_jokers_not_too_close(self):
+        self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'A♥ jkr A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'A♥ jkr A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'A♥ jkr A♥ A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'A♥ A♥ jkr A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'A♥ A♥ jkr A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'A♥ A♥ jkr A♥ A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr A♥ A♥ A♥ jkr')))
+        self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr A♥ A♥ A♥ A♥ jkr')))
+    def test_jokers_too_close(self):
+        self.assertTrue(has_jokers_too_close(Cs(u'jkr jkr')))
+        self.assertTrue(has_jokers_too_close(Cs(u'jkr A♥ jkr')))
+        self.assertTrue(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr jkr')))
+        self.assertTrue(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr A♥ jkr')))
+
+class CardContributor(unittest.TestCase):
+    # valid trio contributions
+    def test_valid_simple_contribution_to_trio(self):
+        self.assertTrue(can_give_to_trio(C(u'4♠'), Cs(u'4♥ 4♦ 4♥')))
+    def test_valid_joker_contribution_to_trio(self):
+        self.assertTrue(can_give_to_trio(C(u'jkr'), Cs(u'4♥ 4♦ 4♥')))
+    def test_valid_simple_contribution_to_trio_with_joker(self):
+        self.assertTrue(can_give_to_trio(C(u'4♦'), Cs(u'jkr 4♦ 4♥')))
+    def test_valid_joker_contribution_to_trio_with_joker(self):
+        self.assertTrue(can_give_to_trio(C(u'jkr'), Cs(u'jkr 4♦ 4♥')))
+
+    # invalid trio contributions
+    def test_invalid_simple_contribution_to_trio(self):
+        self.assertFalse(can_give_to_trio(C(u'3♠'), Cs(u'4♥ 4♦ 4♥')))
+    def test_invalid_simple_contribution_to_trio_with_joker(self):
+        self.assertFalse(can_give_to_trio(C(u'5♦'), Cs(u'jkr 4♦ 4♥')))
+
+    # valid straight contributions on the left
+    def test_valid_simple_contribution_to_straight_to_left(self):
+        self.assertTrue(can_give_to_straight_at_left(C(u'5♦'), Cs(u'6♦ 7♦ 8♦ 9♦')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'K♠'), Cs(u'A♠ 2♠ 3♠ 4♠')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'J♥'), Cs(u'Q♥ K♥ A♥ 2♥')));
+    def test_valid_simple_contribution_to_straight_to_left_with_joker(self):
+        self.assertTrue(can_give_to_straight_at_left(C(u'5♦'), Cs(u'jkr 7♦ 8♦ 9♦')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'K♠'), Cs(u'jkr 2♠ 3♠ 4♠')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'K♠'), Cs(u'A♠ jkr 3♠ 4♠')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'J♥'), Cs(u'Q♥ K♥ jkr 2♥')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'J♥'), Cs(u'Q♥ K♥ A♥ jkr')));
+    def test_valid_joker_contribution_to_straight_to_left(self):
+        self.assertTrue(can_give_to_straight_at_left(C(u'jkr'), Cs(u'6♦ 7♦ 8♦ 9♦')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'jkr'), Cs(u'A♠ 2♠ 3♠ 4♠')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'jkr'), Cs(u'Q♥ K♥ A♥ 2♥')));
+    def test_valid_joker_contribution_to_straight_to_left_with_joker(self):
+        self.assertTrue(can_give_to_straight_at_left(C(u'jkr'), Cs(u'6♦ 7♦ jkr 9♦')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'jkr'), Cs(u'A♠ 2♠ 3♠ jkr')));
+        self.assertTrue(can_give_to_straight_at_left(C(u'jkr'), Cs(u'Q♥ K♥ jkr 2♥')));
+
+    # invalid straight contributions on the left
+    def test_invalid_simple_contribution_to_straight_to_left(self):
+        self.assertFalse(can_give_to_straight_at_left(C(u'6♦'), Cs(u'6♦ 7♦ 8♦ 9♦')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'K♥'), Cs(u'A♠ 2♠ 3♠ 4♠')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'3♥'), Cs(u'Q♥ K♥ A♥ 2♥')));
+    def test_invalid_simple_contribution_to_straight_to_left_with_joker(self):
+        self.assertFalse(can_give_to_straight_at_left(C(u'6♦'), Cs(u'jkr 7♦ 8♦ 9♦')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'K♥'), Cs(u'A♠ jkr 3♠ 4♠')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'3♥'), Cs(u'Q♥ K♥ jkr 2♥')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'3♣'), Cs(u'Q♥ K♥ A♥ jkr')));
+    def test_invalid_joker_contribution_to_straight_to_left_with_joker(self):
+        self.assertFalse(can_give_to_straight_at_left(C(u'jkr'), Cs(u'6♦ jkr 8♦ 9♦')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'jkr'), Cs(u'jkr 2♠ 3♠ 4♠')));
+        self.assertFalse(can_give_to_straight_at_left(C(u'jkr'), Cs(u'Q♥ jkr A♥ 2♥')));
+
+    # valid straight contributions on the right
+    def test_valid_simple_contribution_to_straight_to_right(self):
+        self.assertTrue(can_give_to_straight_at_right(C(u'10♦'), Cs(u'6♦ 7♦ 8♦ 9♦')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'A♠'),  Cs(u'10♠ J♠ Q♠ K♠')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'2♥'),  Cs(u'J♥ Q♥ K♥ A♥')));
+    def test_valid_simple_contribution_to_straight_to_right_with_joker(self):
+        self.assertTrue(can_give_to_straight_at_right(C(u'10♦'), Cs(u'6♦ 7♦ 8♦ jkr')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'A♠'),  Cs(u'10♠ J♠ Q♠ jkr')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'A♠'),  Cs(u'10♠ J♠ jkr K♠')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'2♥'),  Cs(u'J♥ jkr K♥ A♥')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'2♥'),  Cs(u'jkr Q♥ K♥ A♥')));
+    def test_valid_joker_contribution_to_straight_to_right(self):
+        self.assertTrue(can_give_to_straight_at_right(C(u'jkr'), Cs(u'6♦ 7♦ 8♦ 9♦')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'jkr'), Cs(u'10♠ J♠ Q♠ K♠')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'jkr'), Cs(u'J♥ Q♥ K♥ A♥')));
+    def test_valid_joker_contribution_to_straight_to_right_with_joker(self):
+        self.assertTrue(can_give_to_straight_at_right(C(u'jkr'), Cs(u'6♦ jkr 8♦ 9♦')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'jkr'), Cs(u'jkr J♠ Q♠ K♠')));
+        self.assertTrue(can_give_to_straight_at_right(C(u'jkr'), Cs(u'J♥ jkr K♥ A♥')));
+
+
+    # invalid straight contributions on the right
+    def test_invalid_simple_contribution_to_straight_to_right(self):
+        self.assertFalse(can_give_to_straight_at_right(C(u'10♣'), Cs(u'6♦ 7♦ 8♦ 9♦')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'2♠'),  Cs(u'10♠ J♠ Q♠ K♠')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'10♥'), Cs(u'J♥ Q♥ K♥ A♥')));
+    def test_invalid_simple_contribution_to_straight_to_right_with_joker(self):
+        self.assertFalse(can_give_to_straight_at_right(C(u'10♣'), Cs(u'6♦ 7♦ 8♦ jkr')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'2♠'),  Cs(u'10♠ J♠ Q♠ jkr')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'10♥'), Cs(u'J♥ jkr K♥ A♥')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'10♥'), Cs(u'jkr Q♥ K♥ A♥')));
+    def test_invalid_joker_contribution_to_straight_to_right_with_joker(self):
+        self.assertFalse(can_give_to_straight_at_right(C(u'jkr'), Cs(u'6♦ 7♦ jkr 9♦')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'jkr'), Cs(u'10♠ J♠ Q♠ jkr')));
+        self.assertFalse(can_give_to_straight_at_right(C(u'jkr'), Cs(u'J♥ Q♥ jkr A♥')));
+
 class CardSubsets(unittest.TestCase):
     # valid subsets
     def test_empty_subset(self):
@@ -175,6 +283,14 @@ class Lowering(unittest.TestCase):
         self.g = g
 
     def test_lowering(self):
+
+        # Dummy first turn
+        self.g.take_from_well()
+        self.g.drop_to_well(C(u'J♦'))
+        self.g.take_from_well()
+        self.g.drop_to_well(C(u'J♦'))
+
+        # Now we start the real fun
         self.g.take_from_well()
         player = self.g.player_in_turn
         self.assertEqual(player, 0)
@@ -219,6 +335,219 @@ class Lowering(unittest.TestCase):
         # TODO: improve this test
 
 
+class TestGiveCards(unittest.TestCase):
+
+    def test_give_card_to_trio(self):
+        g = GameRound(nr_players=2, nr_trios=3, nr_straights=0)
+        g.hands = [Cs(u'5♣ 6♣ 7♣   2♥ 2♠ jkr  J♦ J♥ J♣  10♦ 10♠ 10♣'),
+                   Cs(u'2♥ 4♥ 5♥ jkr  A♠ A♣ A♥   7♠ 7♣ 7♦   10♥ K♦')]
+        g.well = Cs(u'J♦')
+
+        # Dummy first turn
+        g.take_from_well()
+        g.drop_to_well(C(u'J♦'))
+        g.take_from_well()
+        g.drop_to_well(C(u'J♦'))
+
+        # First player lowers with 3 trios
+        g.take_from_well()
+        g.lower(trios=[Cs(u'2♥ 2♠ jkr'), Cs(u'J♦ J♥ J♣'), Cs(u'10♦ 10♠ 10♣')])
+        g.drop_to_well(C(u'5♣'))
+        cards_on_hand = len(g.hands[0])
+
+        # Second player puts her 10♥ in the well
+        g.take_from_stack()
+        g.drop_to_well(C(u'10♥'))
+
+        # First player takes it and tries to give it to the 10's trio
+        g.take_from_well()
+
+        # Try to give a card that is not in 1st player's hand
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'10♦'), player=0,
+                          lowered_set=Cs(u'10♦ 10♠ 10♣')))
+        # Try to give a card to an unexisting lowered set
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'7♣'), player=0,
+                          lowered_set=Cs(u'7♦ 7♠ 7♣')))
+        # This lowered set exists, but in the 1st player's sets, not 2nd's
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'10♥'), player=1,
+                          lowered_set=Cs(u'10♦ 10♠ 10♣')))
+        # Try to give a card to the wrong set
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'10♥'), player=1,
+                          lowered_set=Cs(u'J♦ J♥ J♣')))
+
+        # Finally, do it right. At the end of the turn, 1st player will have
+        # one less card. After giving, and before dropping to the well, though,
+        # she will have the same amount of cards
+        g.give_to(C(u'10♥'), 0, Cs(u'10♦ 10♠ 10♣'))
+        self.assertTrue( len(g.hands[0]) == cards_on_hand )
+        g.drop_to_well(C(u'6♣'))
+        self.assertTrue( len(g.hands[0]) == cards_on_hand - 1 )
+        # TODO: check that the amount of cards lowered has increased by 1
+
+        # 2nd player tries to give a card, but he hasn't lowered yet
+        self.assertRaises(InvalidMoveException, g.give_to,
+                          **dict(card=C(u'2♥'), player=0,
+                          lowered_set=Cs(u'jkr 2♥ 2♠')))
+
+    def test_give_card_to_straight(self):
+        g = GameRound(nr_players=2, nr_trios=0, nr_straights=1)
+        g.hands = [Cs(u'5♣ 6♣ 7♣ 8♣  2♥ jkr  J♦ J♥ J♣  10♦ 10♠ 10♣'),
+                   Cs(u'2♥ 4♥ 5♥ jkr  A♠ A♣ A♥   jkr 9♣ 7♦   10♥ K♦')]
+        g.well = Cs(u'J♦')
+
+        # Dummy first turn
+        g.take_from_well()
+        g.drop_to_well(C(u'J♦'))
+        g.take_from_well()
+        g.drop_to_well(C(u'J♦'))
+
+        # First player lowers with 1 straight
+        g.take_from_well()
+        g.lower(straights=[Cs(u'5♣ 6♣ 7♣ 8♣')])
+        g.drop_to_well(C(u'10♠'))
+        cards_on_hand = [None, None]
+        cards_on_hand[0] = len(g.hands[0])
+
+        # Second player lowers with 1 straight too
+        g.take_from_well()
+        g.lower(straights=[Cs(u'2♥ jkr 4♥ 5♥')])
+        g.drop_to_well(C(u'9♣'))
+        cards_on_hand[1] = len(g.hands[1])
+
+        # First player takes 9♣ from the well and gives it to his straight
+        g.take_from_well()
+
+        # Try to give a card that is not in 1st player's hand
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'10♥'), player=0,
+                          lowered_set=Cs(u'5♣ 6♣ 7♣ 8♣')))
+        # Try to give a card to an unexisting lowered set
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'9♣'), player=0,
+                          lowered_set=Cs(u'J♦ Q♦ K♦ A♦')))
+        # This lowered set exists, but in the 1st player's sets, not 2nd's
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'9♣'), player=1,
+                          lowered_set=Cs(u'5♣ 6♣ 7♣ 8♣')))
+        # Try to give a card to the wrong set
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'9♣'), player=1,
+                          lowered_set=Cs(u'J♦ J♥ J♣')))
+        # Trying to put it in the wrong side!
+        self.assertRaises(GameRoundException, g.give_to,
+                          **dict(card=C(u'9♣'), player=1,
+                          lowered_set=Cs(u'5♣ 6♣ 7♣ 8♣'),
+                          where='left'))
+
+        # Finally, do it right. At the end of the turn, 1st player will have
+        # one less card. After giving, and before dropping to the well, though,
+        # she will have the same amount of cards
+        g.give_to(C(u'9♣'),  0, Cs(u'5♣ 6♣ 7♣ 8♣'))
+        g.give_to(C(u'10♣'), 0, Cs(u'5♣ 6♣ 7♣ 8♣ 9♣'), where='right')
+        g.give_to(C(u'jkr'), 0, Cs(u'5♣ 6♣ 7♣ 8♣ 9♣ 10♣'), where='left')
+        g.give_to(C(u'J♣'),  0, Cs(u'jkr 5♣ 6♣ 7♣ 8♣ 9♣ 10♣'), where='right')
+        self.assertTrue( len(g.hands[0]) == cards_on_hand[0] - 3 )
+        g.drop_to_well(C(u'10♦'))
+        self.assertTrue( len(g.hands[0]) == cards_on_hand[0] - 4 )
+        # TODO: check that the amount of cards lowered has increased by 3
+
+        # 2nd player gives himself a joker
+        g.take_from_well()
+        g.give_to(C(u'jkr'), 1, Cs(u'2♥ jkr 4♥ 5♥'))
+        self.assertTrue( len(g.hands[1]) == cards_on_hand[1] )
+        g.drop_to_well(C(u'7♦'))
+        self.assertTrue( len(g.hands[1]) == cards_on_hand[1] - 1 )
+
+class TestFullGameRound(unittest.TestCase):
+    def setUp(self):
+        g = GameRound(nr_players=2, nr_trios=3, nr_straights=0)
+        g.hands = [Cs(u'5♣ 6♣ 7♣   2♥ 2♠ jkr  J♦ J♥ J♣  10♦ 10♠ 10♣'),
+                   Cs(u'3♥ 4♥ 5♥ jkr  A♠ A♣ A♥   7♠ 7♣ 7♦   10♥ K♦')]
+        g.well = Cs(u'J♦')
+        self.g = g
+
+    def test_invalid_modes(self):
+
+        # Players haven't started their turn yet, so some things
+        # cannot be done
+        self.assertRaises(InvalidMoveException, self.g.give_to,
+                          **dict(card=C(u'jkr'), player=1,
+                          lowered_set=Cs(u'7♠ 7♣ 7♦')))
+        self.assertRaises(InvalidMoveException, self.g.lower,
+                          **dict(straights=Cs(u'2♥ 2♠ jkr')))
+        self.assertRaises(InvalidMoveException, self.g.drop_to_well,
+                          **dict(card=C(u'J♦')))
+
+        # OK, take a card from the well
+        self.g.take_from_well()
+        self.assertRaises(InvalidMoveException, self.g.take_from_well)
+        self.assertRaises(InvalidMoveException, self.g.take_from_stack)
+
+        # we can't lower yet (first turn), we can't give either, of course
+        self.assertRaises(InvalidMoveException, self.g.lower,
+                          **dict(straights=Cs(u'2♥ 2♠ jkr')))
+        self.assertRaises(InvalidMoveException, self.g.give_to,
+                          **dict(card=C(u'jkr'), player=1,
+                          lowered_set=Cs(u'7♠ 7♣ 7♦')))
+
+        # Just end the turn, then we can't do anything again
+        self.g.drop_to_well(C(u'J♦'))
+        self.assertRaises(InvalidMoveException, self.g.give_to,
+                          **dict(card=C(u'jkr'), player=1,
+                          lowered_set=Cs(u'7♠ 7♣ 7♦')))
+        self.assertRaises(InvalidMoveException, self.g.lower,
+                          **dict(straights=Cs(u'2♥ 2♠ jkr')))
+        self.assertRaises(InvalidMoveException, self.g.drop_to_well,
+                          **dict(card=C(u'J♦')))
+
+    def test_game_round_is_over(self):
+        # No plays so far
+        self.assertFalse(self.g.is_over())
+
+        # Dummy first turn
+        self.g.take_from_well()
+        self.g.drop_to_well(C(u'J♦'))
+        self.g.take_from_well()
+        self.g.drop_to_well(C(u'J♦'))
+
+        # First player lowers with 3 trios
+        self.g.take_from_well()
+        self.g.lower(trios=[Cs(u'2♥ 2♠ jkr'), Cs(u'J♦ J♥ J♣'), Cs(u'10♦ 10♠ 10♣')])
+        self.g.drop_to_well(C(u'5♣'))
+
+        # Not over yet, still 2 cards remaining in 1st player hand
+        self.assertFalse(self.g.is_over())
+
+        # 2nd player's turn, be stupid and give a good card to 1st player
+        self.g.take_from_stack()
+        self.g.drop_to_well(C(u'10♥'))
+        self.assertFalse(self.g.is_over())
+
+        # 1st player takes the card from the well, puts it, together with the
+        # first card that she tool from the well, and finally drops one to the well
+        # (still one card in the hand)
+        self.g.take_from_well()
+        self.g.give_to(C(u'10♥'), 0, Cs(u'10♦ 10♠ 10♣'))
+        self.g.give_to(C(u'J♦'), 0, Cs(u'J♦ J♥ J♣'))
+        self.g.drop_to_well(C(u'6♣'))
+        self.assertFalse(self.g.is_over())
+
+        # 2nd player again drops an important card
+        self.g.take_from_stack()
+        self.g.drop_to_well(C(u'jkr'))
+        self.assertFalse(self.g.is_over())
+
+        # 1st player takes it, puts is somewhere, and wins
+        self.g.take_from_well()
+        self.g.give_to(C(u'jkr'), 0, Cs(u'2♥ 2♠ jkr'))
+        self.g.drop_to_well(C(u'7♣'))
+
+        # Game is over!
+        self.assertTrue(self.g.is_over())
 
 if __name__ == "__main__":
     unittest.main()
