@@ -7,6 +7,18 @@ from card_area import CardArea
 
 APP_NAME = 'carioca'
 
+TURN_SETS = [
+ (2,0,0),
+ (1,1,0),
+ (0,2,0),
+ (3,0,0),
+ (2,1,0),
+ (1,2,0),
+ (4,0,0),
+ (0,3,0),
+ (0,0,1)
+]
+
 class CariocaGUI:
 
 	def __init__(self):
@@ -68,6 +80,7 @@ class CariocaGUI:
 		label = gtk.Label("Are you sure that you want to quit from " + APP_NAME)
 		label.show()
 		dialog = gtk.Dialog(title="Quit " + APP_NAME, buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
+		dialog.set_has_separator(True)
 		dialog.vbox.pack_start(label, True, True, 0)
 		result = dialog.run()
 		dialog.destroy()
@@ -94,6 +107,7 @@ class CariocaGUI:
 			label = gtk.Label("Are you sure that you want to abandon the current game?")
 			label.show()
 			dialog = gtk.Dialog(title="Abandon game?", buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
+			dialog.set_has_separator(True)
 			dialog.vbox.pack_start(label, True, True, 0)
 			result = dialog.run()
 			dialog.destroy()
@@ -104,8 +118,29 @@ class CariocaGUI:
 		self.abandon_game()
 
 		print "Starting a new game"
-		self.game = 1
 
+		# Number of players
+		spinner = gtk.SpinButton(adjustment=gtk.Adjustment(value=1, step_incr=1, lower=1, upper=4))
+		spinner.show()
+		label   = gtk.Label("How may player will participate?")
+		label.show()
+
+		hbox = gtk.HBox(False, 2)
+		hbox.pack_start(label)
+		hbox.pack_end(spinner)
+		hbox.show()
+
+		dialog = gtk.Dialog(title="Abandon game?", buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
+		dialog.set_has_separator(True)
+		dialog.vbox.pack_start(hbox, True, True, 0)
+		result = dialog.run()
+		dialog.destroy()
+		if result == 2:
+			return
+
+		self.num_players = spinner.get_value_as_int()
+
+		self.game = 1
 
 	def abandon_game(self):
 
@@ -114,6 +149,9 @@ class CariocaGUI:
 			return
 
 		print "Abandoning game"
+		self.game = None
+
+
 
 # If called as program, run the GUI
 if __name__ == "__main__":
