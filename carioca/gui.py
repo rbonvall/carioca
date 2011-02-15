@@ -7,17 +7,6 @@ from card_area import CardArea
 
 APP_NAME = 'carioca'
 
-TURN_SETS = [
- (2,0,0),
- (1,1,0),
- (0,2,0),
- (3,0,0),
- (2,1,0),
- (1,2,0),
- (4,0,0),
- (0,3,0),
- (0,0,1)
-]
 
 class CariocaGUI:
 
@@ -25,6 +14,7 @@ class CariocaGUI:
 
 		# Initial attributes
 		self.game = None
+		self.gameRound = None
 
 		# The main window
 		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -64,7 +54,7 @@ class CariocaGUI:
 		self.drawing_area.show()	
 
 		vbox.pack_start(self.drawing_area, True, True, 0)
-		
+
 	def main(self):
 		gtk.main()
 
@@ -95,7 +85,7 @@ class CariocaGUI:
 
 	def quit_handler(self, widget, data=None):
 		self.delete_window_handler(self, widget, None)
-		
+
 
 	##################
 	# Game lifecycle #
@@ -117,10 +107,8 @@ class CariocaGUI:
 		# Abandon game and start a new one
 		self.abandon_game()
 
-		print "Starting a new game"
-
 		# Number of players
-		spinner = gtk.SpinButton(adjustment=gtk.Adjustment(value=1, step_incr=1, lower=1, upper=4))
+		spinner = gtk.SpinButton(adjustment=gtk.Adjustment(value=2, step_incr=1, lower=2, upper=4))
 		spinner.show()
 		label   = gtk.Label("How may player will participate?")
 		label.show()
@@ -138,9 +126,9 @@ class CariocaGUI:
 		if result == 2:
 			return
 
-		self.num_players = spinner.get_value_as_int()
-
-		self.game = 1
+		num_players = spinner.get_value_as_int()
+		print "Starting a new game with %d players" % (num_players)
+		self.game = CariocaGame(num_players)
 
 	def abandon_game(self):
 
