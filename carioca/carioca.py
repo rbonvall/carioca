@@ -14,6 +14,18 @@ LETTER_RANKS = {u'A': A, u'J': J, u'Q': Q, u'K': K, u'D': 10, u'T': 10}
 
 Card = namedtuple('Card', ['rank', 'suit'])
 
+TURN_SETS = [
+ (2,0,0),
+ (1,1,0),
+ (0,2,0),
+ (3,0,0),
+ (2,1,0),
+ (1,2,0),
+ (4,0,0),
+ (0,3,0),
+ (0,0,1)
+]
+
 class InvalidRank(ValueError): pass
 class InvalidSuit(ValueError): pass
 class GameRoundException(StandardError): pass
@@ -344,9 +356,6 @@ class GameRound(object):
             raise GameRoundException("Cannot put %s in the lowered set %s of player %d" % (card_repr(card), lowered_set, player))
 
 
-    def _hands_repr(self):
-        return [' '.join(map(card_repr, hand)) for hand in self.hands]
-
     def is_over(self):
         'Checks if the current game round is over'
 
@@ -371,3 +380,37 @@ class GameRound(object):
                 self.__class__.__name__, self.nr_players, round, self.nr_decks)
 
 
+
+'''
+A CariocaGame drives the process of playing a round,
+finish it, and finally check that the game is over.
+'''
+class CariocaGame(object):
+
+    def __init__(self, nr_players, nr_decks=2):
+        self._nr_players = nr_players
+        self._current_round = None
+        self._current_round_nr = 0
+        self._nr_decks = nr_decks
+        self._first_turn = 1 # random() % nr_players
+
+    def is_over(self):
+        return (self._current_round_nr > len(TURN_SETS))
+
+    def go_to_next_round(self):
+
+        if self.is_over():
+            raise GameException('No more rounds available, cannot go to a next round')
+
+        # Create new round, and update who's going to play first in the next round
+        current_set = TURN_SETS[self._current_round_nr]
+        self._current_round = GameRound(self._nr_players,
+                               current_set[0], current_set[1], current_set[2],
+                               self._first_turn, self._nr_decks)
+        self._current_round_nr += 1
+        self._first_turn += 1
+
+    def get_current_game(self):
+        return self._current_round
+
+# vim: set tabstop=4 expandtab:
