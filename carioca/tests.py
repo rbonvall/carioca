@@ -76,6 +76,22 @@ class Straights(unittest.TestCase):
     def test_too_long(self):
         self.assertFalse(is_straight(Cs(u'3♠ 4♠ 5♠ 6♠ 7♠')))
 
+class ScoreTest(unittest.TestCase):
+    def test_get_score_for_empty_hand(self):
+        self.assertEquals(get_score(Cs(u'')), 0)
+    def test_get_score_for_one_card(self):
+        self.assertEquals(get_score(Cs(u'2♣')), 2)
+        self.assertEquals(get_score(Cs(u'3♥')), 3)
+        self.assertEquals(get_score(Cs(u'J♠')), 10)
+        self.assertEquals(get_score(Cs(u'Q♦')), 10)
+        self.assertEquals(get_score(Cs(u'K♣')), 10)
+        self.assertEquals(get_score(Cs(u'A♥')), 20)
+        self.assertEquals(get_score(Cs(u'jkr')), 30)
+    def test_get_score_hands_with_cards(self):
+        self.assertEquals(get_score(Cs(u'A♥ 3♣ Q♥ jkr jkr 8♦ J♠')), 111)
+        self.assertEquals(get_score(Cs(u'2♥ 3♣ 3♥ 2♦ 8♠ 9♦')), 27)
+        self.assertEquals(get_score(Cs(u'7♠ 8♠ 9♠ 10♠  7♥ 7♠ 7♦  3♣ A♣ 9♦ 8♦ 7♦')), 102)
+
 class Joker(unittest.TestCase):
     def test_jokers_not_too_close(self):
         self.assertFalse(has_jokers_too_close(Cs(u'jkr A♥ A♥ jkr')))

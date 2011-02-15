@@ -91,6 +91,13 @@ def value(card):
         return 30
     raise InvalidRank('%d is not a valid rank' % card.rank)
 
+def get_score(cards):
+    '''Calculates the score corresponding to a card set'''
+    score = 0
+    for card in cards:
+        score += value(card)
+    return score
+
 def create_deck():
     jokers = [Card(JOKER, None)] * 2
     return [Card(rank, suit) for rank in RANKS for suit in SUITS] + jokers
@@ -198,6 +205,8 @@ class GameRound(object):
         self.well = [self.stack.pop()]
         self.player_in_turn = first_turn
         self.card_taken = False
+
+        self.scores = [None for pl in range(nr_players)]
 
     def peek_well_card(self):
         'Peek the card can be taken from the well, without taking it'
@@ -345,6 +354,15 @@ class GameRound(object):
             if len(hand) == 0:
                 return True
         return False
+
+    def calculate_scores(self):
+        'Calculates the final scores for all players on this turn'
+
+        if not self.is_over():
+            raise GameRoundException('Round is not over yet, cannot calculate each player\'s score')
+
+        for i in range(self.nr_players):
+            self.scores[i] = get_score(self.hands[i])
 
     def __repr__(self):
         round = ('ER' if self.nr_royal_straights
