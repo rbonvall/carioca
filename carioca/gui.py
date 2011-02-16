@@ -77,6 +77,7 @@ class CariocaGUI:
 		aboutDialog = gtk.AboutDialog()
 		aboutDialog.set_authors([u'Roberto Bonvallet', u'Rodrigo Tobar'])
 		aboutDialog.set_name(u'Carioca')
+		aboutDialog.set_comments(u'A carioca game written in python')
 		aboutDialog.show()
 
 	###################
