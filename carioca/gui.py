@@ -4,8 +4,21 @@ import gtk
 import pygtk
 
 from card_area import CardArea
+from carioca import CariocaGame
 
 APP_NAME = 'carioca'
+
+def runOKCancelDialog(title, labelText):
+	label = gtk.Label(labelText)
+	label.show()
+	dialog = gtk.Dialog(title=title,
+	                    buttons=(gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT, gtk.STOCK_OK, gtk.RESPONSE_ACCEPT),
+	                    flags=gtk.DIALOG_MODAL)
+	dialog.set_has_separator(True)
+	dialog.vbox.pack_start(label, True, True, 0)
+	result = dialog.run()
+	dialog.destroy()
+	return result
 
 
 class CariocaGUI:
@@ -38,6 +51,8 @@ class CariocaGUI:
 			( "/_File", None, None, 0, "<Branch>" ),
 			( "/File/_New game", "<control>N", lambda a,b: self.new_game(), 0, None),
 			( "/File/_Quit " + APP_NAME, "<control>Q", self.quit_handler, 0, None),
+			( "/_Help", None, None, 0, "<Branch>"),
+			( "/Help/_About", None, lambda a,b: self.about(), 0, None),
 		)
 
 		accel_group = gtk.AccelGroup()
@@ -58,6 +73,12 @@ class CariocaGUI:
 	def main(self):
 		gtk.main()
 
+	def about(self):
+		aboutDialog = gtk.AboutDialog()
+		aboutDialog.set_authors([u'Roberto Bonvallet', u'Rodrigo Tobar'])
+		aboutDialog.set_name(u'Carioca')
+		aboutDialog.show()
+
 	###################
 	# Signal handlers #
 	###################
@@ -67,15 +88,8 @@ class CariocaGUI:
 			return False
 
 		# Dialog confirming user exit
-		label = gtk.Label("Are you sure that you want to quit from " + APP_NAME)
-		label.show()
-		dialog = gtk.Dialog(title="Quit " + APP_NAME, buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
-		dialog.set_has_separator(True)
-		dialog.vbox.pack_start(label, True, True, 0)
-		result = dialog.run()
-		dialog.destroy()
-
-		if result == 1:
+		result = runOKCancelDialog("Quit " + APP_NAME, "Are you sure that you want to quit from " + APP_NAME)
+		if result == gtk.RESPONSE_OK:
 			return False
 		else:
 			return True
@@ -94,14 +108,8 @@ class CariocaGUI:
 
 		# If there is a current game, check if we want to abandon it
 		if( self.game is not None ):
-			label = gtk.Label("Are you sure that you want to abandon the current game?")
-			label.show()
-			dialog = gtk.Dialog(title="Abandon game?", buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
-			dialog.set_has_separator(True)
-			dialog.vbox.pack_start(label, True, True, 0)
-			result = dialog.run()
-			dialog.destroy()
-			if result == 2:
+			result = runOKCancelDialog("Abandon game?", "Are you sure that you want to abandon the current game?")
+			if result == gtk.RESPONSE_REJECT:
 				return
 
 		# Abandon game and start a new one
@@ -118,7 +126,7 @@ class CariocaGUI:
 		hbox.pack_end(spinner)
 		hbox.show()
 
-		dialog = gtk.Dialog(title="Abandon game?", buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
+		dialog = gtk.Dialog(title="Players", buttons=("OK", 1, "Cancel", 2), flags=gtk.DIALOG_MODAL)
 		dialog.set_has_separator(True)
 		dialog.vbox.pack_start(hbox, True, True, 0)
 		result = dialog.run()
