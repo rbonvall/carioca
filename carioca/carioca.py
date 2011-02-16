@@ -31,9 +31,9 @@ class InvalidSuit(ValueError): pass
 class GameRoundException(StandardError): pass
 class InvalidMoveException(StandardError): pass
 
-def is_joker(card):
-    return card.rank == JOKER
-
+############################
+# Convenience constructors #
+############################
 def C(r):
     u'''Convenient constructor for cards from a string argument.
 
@@ -68,6 +68,12 @@ def Cs(r):
     return map(C, r.split())
 
 
+#####################
+# Auxiliary methods #
+#####################
+def is_joker(card):
+    return card.rank == JOKER
+
 def card_repr(card):
     u'''Human-friendly card representation.
 
@@ -87,7 +93,7 @@ def card_repr(card):
         r = LETTER_REPRS[card.rank]
     else:
         r = unicode(card.rank)
-    return u'%s%s' % (r, card.suit)
+    return r + card.suit
 
 def card_set_repr(cards):
     return u'[' + ','.join(map(card_repr, cards)) + u']'
