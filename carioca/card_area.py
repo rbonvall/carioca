@@ -1,6 +1,14 @@
 import gtk
 import math
 
+from carioca import HEARTS, CLUBS, DIAMONDS, SPADES
+
+CARD_BASE_WIDTH  = 81
+CARD_BASE_HEIGHT = 126
+
+CARD_WIDTH  = 1 * CARD_BASE_WIDTH
+CARD_HEIGHT = 1 * CARD_BASE_HEIGHT
+
 class CardArea(gtk.DrawingArea):
 
 	def __init__(self):
@@ -8,14 +16,31 @@ class CardArea(gtk.DrawingArea):
 		self.add_events(gtk.gdk.BUTTON_PRESS_MASK |
 		                gtk.gdk.BUTTON1_MOTION_MASK)
 
-		self.connect('expose-event', self.expose)
+		self.connect('expose_event', self.expose)
 		self.connect('button_press_event', self.pressing)
 		self.connect('motion_notify_event', self.moving)
 
 		self.desp = 0
 
-		self.image = gtk.Image()
-		self.image.set_from_file('/usr/share/gnome-games-common/cards/gnomangelo_bitmap.svg');
+		self.card_pixbuf = dict()
+		self.initializeCards()
+
+	def initializeCards(self):
+		tmpbuf = gtk.gdk.pixbuf_new_from_file_at_size('/usr/share/gnome-games-common/cards/gnomangelo_bitmap.svg.unbranded', CARD_WIDTH*13, CARD_HEIGHT*5);
+
+		i = 0
+		for suit in CLUBS, DIAMONDS, HEARTS, SPADES:
+			j = 0
+			for rank in range(1,14):
+				card = (rank, suit)
+				self.card_pixbuf[card] = gtk.gdk.Pixbuf(
+				                          tmpbuf.get_colorspace(),
+				                          tmpbuf.get_has_alpha(),
+				                          tmpbuf.get_bits_per_sample(),
+				                          CARD_WIDTH, CARD_HEIGHT)
+				tmpbuf.copy_area(j*CARD_WIDTH, i*CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT, self.card_pixbuf[card], 0, 0)
+				j += 1
+			i += 1
 
 	###################
 	# Signal handlers #
@@ -42,8 +67,8 @@ class CardArea(gtk.DrawingArea):
 		context.set_source_rgb(0, 0, 0)
 		context.stroke()
 
-		dir(context)
-		(self, context, self.image, 0, 0, 0, 0, 10, 10)
+		#self.cardpixbuf.render_to_drawable(self,context, 0, 0, 0, 0, 0, 0, 0)
+		self.window.draw_pixbuf(None, self.card_pixbuf[(6, SPADES)], 0, 0, 0, 0, CARD_WIDTH, CARD_HEIGHT)
 
 	def pressing(self, widget, event):
 		self.pressing_x = event.x
