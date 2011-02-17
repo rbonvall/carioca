@@ -1,4 +1,4 @@
-# vim: set fileencoding=utf-8:
+# vim: set fileencoding=utf-8 tabstop=4 expandtab:
 
 from collections import namedtuple, defaultdict
 from random import shuffle
@@ -418,5 +418,3 @@ class CariocaGame(object):
 
     def get_current_game(self):
         return self._current_round
-
-# vim: set tabstop=4 expandtab:

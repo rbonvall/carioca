@@ -1,4 +1,4 @@
-# vim: set fileencoding=utf-8:
+# vim: set fileencoding=utf-8 tabstop=4 expandtab:
 
 from carioca import *
 import unittest
@@ -567,5 +567,3 @@ class TestFullGameRound(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-# vim: set tabstop=4 expandtab:
