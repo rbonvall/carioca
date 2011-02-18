@@ -28,19 +28,28 @@ class CardArea(gtk.DrawingArea):
 	def initializeCards(self):
 		tmpbuf = gtk.gdk.pixbuf_new_from_file_at_size('/usr/share/gnome-games-common/cards/gnomangelo_bitmap.svg.unbranded', CARD_WIDTH*13, CARD_HEIGHT*5);
 
-		i = 0
+		# SVG contains from A to K horizontally,
+		# and CL, DI, HE, SP and vertically
+		j = 0
 		for suit in CLUBS, DIAMONDS, HEARTS, SPADES:
-			j = 0
+			i = 0
 			for rank in range(1,14):
-				card = (rank, suit)
-				self.card_pixbuf[card] = gtk.gdk.Pixbuf(
-				                          tmpbuf.get_colorspace(),
-				                          tmpbuf.get_has_alpha(),
-				                          tmpbuf.get_bits_per_sample(),
-				                          CARD_WIDTH, CARD_HEIGHT)
-				tmpbuf.copy_area(j*CARD_WIDTH, i*CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT, self.card_pixbuf[card], 0, 0)
-				j += 1
-			i += 1
+				self.__read_card_pixbuf((rank, suit), tmpbuf, i, j)
+				i += 1
+			j += 1
+
+		# Final line contains joker, double-joker and reverse
+		self.__read_card_pixbuf((0, None), tmpbuf, 0, 4)
+		self.__read_card_pixbuf('djkr', tmpbuf, 1, 4)
+		self.__read_card_pixbuf('reverse', tmpbuf, 2, 4)
+
+	def __read_card_pixbuf(self, key, source, x, y):
+		self.card_pixbuf[key] = gtk.gdk.Pixbuf(
+		                          source.get_colorspace(),
+		                          source.get_has_alpha(),
+		                          source.get_bits_per_sample(),
+		                          CARD_WIDTH, CARD_HEIGHT)
+		source.copy_area(x*CARD_WIDTH, y*CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT, self.card_pixbuf[key], 0, 0)
 
 	###################
 	# Signal handlers #
@@ -68,7 +77,7 @@ class CardArea(gtk.DrawingArea):
 		context.stroke()
 
 		#self.cardpixbuf.render_to_drawable(self,context, 0, 0, 0, 0, 0, 0, 0)
-		self.window.draw_pixbuf(None, self.card_pixbuf[(6, SPADES)], 0, 0, 0, 0, CARD_WIDTH, CARD_HEIGHT)
+		self.window.draw_pixbuf(None, self.card_pixbuf['reverse'], 0, 0, 0, 0, CARD_WIDTH, CARD_HEIGHT)
 
 	def pressing(self, widget, event):
 		self.pressing_x = event.x
