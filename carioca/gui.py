@@ -55,6 +55,7 @@ class CariocaGUI:
 
 		self.createMenu(vbox)
 		self.createDrawingArea(vbox)
+		self.createStatusBar(vbox)
 
 		self.window.add(vbox)
 		self.window.show()
@@ -85,6 +86,11 @@ class CariocaGUI:
 		self.drawing_area.show()	
 
 		vbox.pack_start(self.drawing_area, True, True, 0)
+
+	def createStatusBar(self, vbox):
+		self.status_bar = gtk.Statusbar()
+		self.status_bar.show()
+		vbox.pack_end(self.status_bar, True, False, 0)
 
 	###################
 	# Signal handlers #
@@ -170,8 +176,8 @@ class CariocaGUI:
 		aboutDialog.set_authors([u'Roberto Bonvallet', u'Rodrigo Tobar'])
 		aboutDialog.set_name(u'Carioca')
 		aboutDialog.set_comments(u'A carioca game written in python')
-		aboutDialog.show()
-
+		aboutDialog.run()
+		aboutDialog.destroy()
 
 
 # If called as program, run the GUI
