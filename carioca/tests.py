@@ -76,6 +76,17 @@ class Straights(unittest.TestCase):
     def test_too_long(self):
         self.assertFalse(is_straight(Cs(u'3♠ 4♠ 5♠ 6♠ 7♠')))
 
+class RoyalStraights(unittest.TestCase):
+    def test_valid_royal_straights(self):
+        self.assertTrue(is_royal_straight(Cs(u'A♥ 2♥ 3♥ 4♥ 5♥ 6♥ 7♥ 8♥ 9♥ 10♥ J♥ Q♥ K♥')))
+        self.assertTrue(is_royal_straight(Cs(u'K♥ A♥ 2♥ 3♥ 4♥ 5♥ 6♥ 7♥ 8♥ 9♥ 10♥ J♥ Q♥')))
+        self.assertTrue(is_royal_straight(Cs(u'K♣ A♣ Q♣ 3♣ 4♣ 5♣ 6♣ 7♣ 8♣ 9♣ 10♣ J♣ 2♣')))
+
+    def test_invalid_royal_straights(self):
+        self.assertFalse(is_royal_straight(Cs(u'A♥ 2♥ 3♥ 4♥ 5♥ 6♥ 7♥ 8♥ 9♥ 10♥ J♥ Q♥ K♣')))
+        self.assertFalse(is_royal_straight(Cs(u'A♥ 2♥ 3♥ 4♥ 5♥ 6♥ 7♥ 8♥ 9♥ 10♥ J♥ Q♥')))
+        self.assertFalse(is_royal_straight(Cs(u'A♥ 2♥ 3♥ 4♥ 5♥ 6♥ 7♥ 8♥ 9♥ 10♥ J♥ Q♥')))
+
 class ScoreTest(unittest.TestCase):
     def test_get_score_for_empty_hand(self):
         self.assertEquals(get_score(Cs(u'')), 0)

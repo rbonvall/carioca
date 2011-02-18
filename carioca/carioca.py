@@ -143,6 +143,11 @@ def is_straight(cards):
     return (len(cards) == 4 and are_suits_equal(cards) and
             are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
 
+def is_royal_straight(cards):
+    cards.sort(cmp=lambda x,y: cmp(x.rank, y.rank))
+    return (len(cards) == 13 and are_suits_equal(cards) and
+            are_ranks_consecutive(cards) and count_jokers(cards) <= 1)
+
 def can_give_to_trio(card, trio):
     return are_ranks_equal(trio + [card])
 
@@ -206,21 +211,28 @@ class GameRound(object):
     def __init__(self, nr_players,
                  nr_trios=0, nr_straights=0, nr_royal_straights=0,
                  first_turn=0, nr_decks=2):
+
         self.nr_trios = nr_trios
         self.nr_straights = nr_straights
         self.nr_royal_straights = nr_royal_straights
         self.nr_players = nr_players
         self.nr_decks = nr_decks
 
+        # Information about lowered cards and players
+        self.did_lower = [False for pl in range(nr_players)]
+        self.lowered_trios = [None for pl in range(nr_players)]
+        self.lowered_straights = [None for pl in range(nr_players)]
+        self.lowered_royal_straights = [None for pl in range(nr_players)]
+
+        # Initialize the cards for this round
         self.stack = nr_decks * create_deck()
         shuffle(self.stack)
         self.hands = [[self.stack.pop() for _ in range(12)]
                       for player in range(nr_players)]
-        self.lowered_trios = [None for pl in range(nr_players)]
-        self.lowered_straights = [None for pl in range(nr_players)]
-        self.did_lower = [False for pl in range(nr_players)]
-        self.played_first_turn = [False for pl in range(nr_players)]
         self.well = [self.stack.pop()]
+
+        # Setup initial playing conditions
+        self.played_first_turn = [False for pl in range(nr_players)]
         self.player_in_turn = first_turn
         self.card_taken = False
 
@@ -269,22 +281,26 @@ class GameRound(object):
 
         if self.nr_trios:
             if any(not is_trio(cards) for cards in trios):
-                raise GameRoundException('Invalid trio in %s' % str(cards))
+                raise GameRoundException('Invalid trio in %s' % card_set_repr(cards))
             if len(trios) != self.nr_trios:
                 raise GameRoundException('%d trios are needed, only %d provided' %
                                          (self.nr_trios, len(trios)))
         if self.nr_straights:
             if any(not is_straight(cards) for cards in straights):
-                raise GameRoundException('Invalid straight in %s' % str(cards))
+                raise GameRoundException('Invalid straight in %s' % card_set_repr(cards))
             if len(straights) != self.nr_straights:
                 raise GameRoundException('%d straights are needed, only %d provided' %
                                          (self.nr_straights, len(straights)))
-        if not self.card_taken:
-            raise GameRoundException('A card must be taken before lowering')
+        if self.nr_royal_straights:
+            if any(not is_royal_straight(cards) for cards in royal_straights):
+                raise GameRoundException('Invalid royal straight in %s' % card_set_repr(rcards))
+            if len(royal_straights) != self.nr_royal_straights:
+                raise GameRoundException('%d royal straights are needed, only %d provided' %
+                                         (self.nr_royal_straights, len(royal_straights)))
 
         hand = self.hands[player]
 
-        cards_to_lower = [card for item in (trios, straights)
+        cards_to_lower = [card for item in (trios, straights, royal_straights)
                                for cards in item
                                for card in cards]
         if not is_card_subset(cards_to_lower, hand):
@@ -415,6 +431,8 @@ class CariocaGame(object):
                                self._first_turn, self._nr_decks)
         self._current_round_nr += 1
         self._first_turn += 1
+
+        return self._current_round
 
     def get_current_game(self):
         return self._current_round
