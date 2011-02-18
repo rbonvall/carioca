@@ -144,6 +144,10 @@ class CariocaGUI:
 		print "Starting a new game with %d players" % (num_players)
 		self.game = CariocaGame(num_players)
 
+		self.current_round =	self.game.go_to_next_round()
+
+		# Update the GUI with current round
+
 
 	def abandon_game(self):
 

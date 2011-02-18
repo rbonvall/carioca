@@ -63,32 +63,23 @@ class CardArea(gtk.DrawingArea):
 
 	def draw(self, context):
 		rect = self.get_allocation()
-		x = rect.x + rect.width / 2
-		y = rect.y + rect.height / 2
-		
-		radius = min(rect.width / 2, rect.height / 2) - 5
-		
-		context.arc(x, y, radius, 0 + self.desp, (1 * math.pi) + self.desp)
-		
-		context.set_source_rgb(0.7, 0.8, 0.1)
+
+		# The green backgroung doesn't change
+		context.rectangle(0, 0, rect.width, rect.height)
+		context.set_source_rgb(0.0, 0.8, 0.0)
 		context.fill_preserve()
-		
-		context.set_source_rgb(0, 0, 0)
-		context.stroke()
 
 		self.window.draw_pixbuf(None, self.card_pixbuf['reverse'], 0, 0, 0, 0, CARD_WIDTH, CARD_HEIGHT)
 
 	def pressing(self, widget, event):
-		self.pressing_x = event.x
+		# event has x,y of where it was produced
+		pass
 
 	def moving(self, widget, event):
-
-		if(self.pressing_x - event.x) > 1:
-			self.desp = self.desp + 0.1
-		else:
-			self.desp = self.desp - 0.1
-
-		self.pressing_x = event.x
-
-		self.draw(self.context)
-		self.queue_draw()
+		# event has x,y of where it was produced
+		#
+		# It also seems that this should be done at the end:
+		#
+		# self.draw(self.context)
+		# self.queue_draw()
+		pass
