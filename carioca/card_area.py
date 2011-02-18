@@ -76,7 +76,6 @@ class CardArea(gtk.DrawingArea):
 		context.set_source_rgb(0, 0, 0)
 		context.stroke()
 
-		#self.cardpixbuf.render_to_drawable(self,context, 0, 0, 0, 0, 0, 0, 0)
 		self.window.draw_pixbuf(None, self.card_pixbuf['reverse'], 0, 0, 0, 0, CARD_WIDTH, CARD_HEIGHT)
 
 	def pressing(self, widget, event):
