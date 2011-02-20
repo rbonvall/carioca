@@ -147,6 +147,8 @@ class CariocaGUI:
 		self.current_round =	self.game.go_to_next_round()
 
 		# Update the GUI with current round
+		self.drawing_area.set_nr_players(num_players)
+		self.drawing_area.set_game_round(self.current_round)
 
 
 	def abandon_game(self):
