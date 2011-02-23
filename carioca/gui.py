@@ -103,7 +103,7 @@ class CariocaGUI:
 
 	def quit_handler(self, widget, data=None):
 		if self.confirm_end_carioca():
-			gtk.main_quit()
+			self.window.destroy()
 
 	##################
 	# Game lifecycle #
@@ -167,9 +167,9 @@ class CariocaGUI:
 
 		# Dialog confirming user exit
 		result = runOKCancelDialog("Quit " + APP_NAME, "Are you sure that you want to quit from " + APP_NAME)
-		if not result:
-			return False
-		return False
+		if result:
+			self.abandon_game()
+		return result
 
 	##########
 	# Others #
