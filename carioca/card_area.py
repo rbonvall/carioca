@@ -4,11 +4,30 @@ import math
 
 from carioca import HEARTS, CLUBS, DIAMONDS, SPADES
 
-CARD_BASE_WIDTH  = 81
-CARD_BASE_HEIGHT = 126
+# Cards have a 9:14 ratio
+CARD_BASE_WIDTH  = 9
+CARD_BASE_HEIGHT = 14
 
-CARD_WIDTH  = 1 * CARD_BASE_WIDTH
-CARD_HEIGHT = 1 * CARD_BASE_HEIGHT
+CARD_WIDTH  = 6 * CARD_BASE_WIDTH
+CARD_HEIGHT = 6 * CARD_BASE_HEIGHT
+
+def round_rectangle(context, x,y,w,h,r = 10):
+	'''Draw a rounded rectangle in the given cairo context'''
+	#   A****BQ
+	#  H      C
+	#  *      *
+	#  G      D
+	#   F****E
+	context.move_to(x+r,y)                      # Move to A
+	context.line_to(x+w-r,y)                    # Straight line to B
+	context.curve_to(x+w,y,x+w,y,x+w,y+r)       # Curve to C, Control points are both at Q
+	context.line_to(x+w,y+h-r)                  # Move to D
+	context.curve_to(x+w,y+h,x+w,y+h,x+w-r,y+h) # Curve to E
+	context.line_to(x+r,y+h)                    # Line to F
+	context.curve_to(x,y+h,x,y+h,x,y+h-r)       # Curve to G
+	context.line_to(x,y+r)                      # Line to H
+	context.curve_to(x,y,x,y,x+r,y)             # Curve to A
+
 
 class CardArea(gtk.DrawingArea):
 	u'''
@@ -139,9 +158,24 @@ class CardArea(gtk.DrawingArea):
 		self.context.clip()
 		self.draw(self.context)
 
-	##################
-	# Drawing method #
-	##################
+	def pressing(self, widget, event):
+		# event has x,y of where it was produced
+		pass
+
+	def moving(self, widget, event):
+		# event has x,y of where it was produced
+		#
+		# It also seems that this should be done at the end:
+		#
+		# self.draw(self.context)
+		# self.queue_draw()
+		pass
+
+
+
+	##############################
+	# High-level drawing methods #
+	##############################
 	def draw(self, context):
 		rect = self.get_allocation()
 
@@ -161,29 +195,69 @@ class CardArea(gtk.DrawingArea):
 		self.__draw_card('reverse', 200, 100)
 
 	def __draw_local_player(self):
-		pass
+		for i, card in enumerate(self.game_round.hands[0]):
+			self.__draw_card(card, 100 + i*15, 300)
 
 	def __draw_other_players(self):
-		pass
+
+		if self.nr_players == 2:
+			for i, card in enumerate(self.game_round.hands[1]):
+				self.__draw_card('reverse', 100 + i*5, 0)
+			self.__draw_lowering_area(100,100, 200,CARD_HEIGHT)
+		elif self.nr_players == 3:
+			for i, card in enumerate(self.game_round.hands[1]):
+				self.__draw_card('reverse-ccw', 0, 20+i*5, gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+			for i, card in enumerate(self.game_round.hands[2]):
+				self.__draw_card('reverse-cw', 200, 20*i+5, gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
+		elif self.nr_players == 4:
+			for i, card in enumerate(self.game_round.hands[1]):
+				self.__draw_card('reverse', 100 + i*5, 0)
+			for i, card in enumerate(self.game_round.hands[2]):
+				self.__draw_card('reverse-cw', 0, 20+i*5, gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
+			for i, card in enumerate(self.game_round.hands[3]):
+				self.__draw_card('reverse-ccw', 200, 20+i*5, gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+
+
+
+	#############################
+	# Low-level drawing methods #
+	#############################
+	def __draw_lowering_area(self, x, y, width, height):
+		'''
+		Draws the lowering area border, in the given coordinates, and with the given dimensions.
+		The lowering area is a rounded rectangle with dashed grey border, where the lowered
+		card sets are shown. Each player has its own lowering area
+		'''
+
+		# Prepare the border style, save old styles
+		dash_offset    = self.context.get_dash()
+		line_width     = self.context.get_line_width()
+		source_pattern = self.context.get_source()
+
+		self.context.set_dash([5])
+		self.context.set_line_width(1)
+		self.context.set_source_rgb(0.9,0.9,0.9)
+
+		# Draw it!
+		round_rectangle(self.context, x, y, width, height)
+		self.context.stroke();
+
+		# Reset the context to its previous values
+		self.context.set_dash(dash_offset[0], dash_offset[1])
+		self.context.set_line_width(line_width)
+		self.context.set_source(source_pattern)
+
 
 	def __draw_card(self, card, x, y, orientation=gtk.gdk.PIXBUF_ROTATE_NONE):
+		'''
+		Draws the given card in the given position. If no orientation parameter is given,
+		the card has its natural orientation; otherwise, it is shown oriented depending
+		on the value of orientation
+		'''
 		if orientation == gtk.gdk.PIXBUF_ROTATE_NONE:
 			self.window.draw_pixbuf(None, self.card_pixbuf[card], 0, 0, x, y, CARD_WIDTH, CARD_HEIGHT)
 		else:
 			self.window.draw_pixbuf(None, self.card_pixbuf[card], 0, 0, x, y, CARD_HEIGHT, CARD_WIDTH)
-
-	def pressing(self, widget, event):
-		# event has x,y of where it was produced
-		pass
-
-	def moving(self, widget, event):
-		# event has x,y of where it was produced
-		#
-		# It also seems that this should be done at the end:
-		#
-		# self.draw(self.context)
-		# self.queue_draw()
-		pass
 
 	##########
 	# Others #
