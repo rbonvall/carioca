@@ -141,7 +141,6 @@ class CariocaGUI:
 			return
 
 		num_players = spinner.get_value_as_int()
-		print "Starting a new game with %d players" % (num_players)
 		self.game = CariocaGame(num_players)
 
 		self.current_round =	self.game.go_to_next_round()
@@ -157,7 +156,6 @@ class CariocaGUI:
 		if self.game is None:
 			return
 
-		print "Abandoning game"
 		self.game = None
 
 
