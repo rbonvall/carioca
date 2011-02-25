@@ -53,14 +53,14 @@ class CariocaGUI:
 		vbox = gtk.VBox(False, 0)
 		vbox.show()
 
-		self.createMenu(vbox)
-		self.createDrawingArea(vbox)
-		self.createStatusBar(vbox)
+		self.__createMenu(vbox)
+		self.__createDrawingArea(vbox)
+		self.__createStatusBar(vbox)
 
 		self.window.add(vbox)
 		self.window.show()
 
-	def createMenu(self, vbox):
+	def __createMenu(self, vbox):
 
 		menu_items = (
 		    ( "/_File", None, None, 0, "<Branch>" ),
@@ -80,14 +80,14 @@ class CariocaGUI:
 		vbox.pack_start(main_menu, False, False, 0)
 
 
-	def createDrawingArea(self, vbox):
+	def __createDrawingArea(self, vbox):
 		self.drawing_area = CardArea()
 		self.drawing_area.set_size_request(500, 500)
 		self.drawing_area.show()	
 
 		vbox.pack_start(self.drawing_area, True, True, 0)
 
-	def createStatusBar(self, vbox):
+	def __createStatusBar(self, vbox):
 		self.status_bar = gtk.Statusbar()
 		self.status_bar.show()
 		vbox.pack_end(self.status_bar, True, False, 0)
