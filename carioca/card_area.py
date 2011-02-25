@@ -8,8 +8,12 @@ from carioca import HEARTS, CLUBS, DIAMONDS, SPADES
 CARD_BASE_WIDTH  = 9
 CARD_BASE_HEIGHT = 14
 
-CARD_WIDTH  = 6 * CARD_BASE_WIDTH
-CARD_HEIGHT = 6 * CARD_BASE_HEIGHT
+CARD_WIDTH  = 7 * CARD_BASE_WIDTH
+CARD_HEIGHT = 7 * CARD_BASE_HEIGHT
+
+# Areas where cards are shown are always CARD_HEIGHT in the short side
+# and AREAS_LONGSIDE in the long side
+AREAS_LONGSIDE = 4 * CARD_WIDTH
 
 def round_rectangle(context, x,y,w,h,r = 10):
 	'''Draw a rounded rectangle in the given cairo context'''
@@ -137,6 +141,7 @@ class CardArea(gtk.DrawingArea):
 		self.__read_card_pixbuf('reverse', tmpbuf, 2, 4)
 
 		# We need the rotated 'reverse' cards to show for the other players
+		self.card_pixbuf['reverse-ud']  = self.card_pixbuf['reverse'].rotate_simple(gtk.gdk.PIXBUF_ROTATE_UPSIDEDOWN)
 		self.card_pixbuf['reverse-cw']  = self.card_pixbuf['reverse'].rotate_simple(gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
 		self.card_pixbuf['reverse-ccw'] = self.card_pixbuf['reverse'].rotate_simple(gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
 
@@ -195,34 +200,67 @@ class CardArea(gtk.DrawingArea):
 		self.__draw_card('reverse', 200, 100)
 
 	def __draw_local_player(self):
-		for i, card in enumerate(self.game_round.hands[0]):
-			self.__draw_card(card, 100 + i*15, 300)
+		self.__draw_hand(self.game_round.hands[0], 100, 300)
+		self.__draw_lowering_area(100,200)
 
 	def __draw_other_players(self):
 
 		if self.nr_players == 2:
-			for i, card in enumerate(self.game_round.hands[1]):
-				self.__draw_card('reverse', 100 + i*5, 0)
-			self.__draw_lowering_area(100,100, 200,CARD_HEIGHT)
+			self.__draw_hand(self.game_round.hands[1], 100, 0, showRealCards=False)
+			self.__draw_lowering_area(100, CARD_HEIGHT + 2)
 		elif self.nr_players == 3:
-			for i, card in enumerate(self.game_round.hands[1]):
-				self.__draw_card('reverse-ccw', 0, 20+i*5, gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
-			for i, card in enumerate(self.game_round.hands[2]):
-				self.__draw_card('reverse-cw', 200, 20*i+5, gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
+			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False)
+			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False)
 		elif self.nr_players == 4:
-			for i, card in enumerate(self.game_round.hands[1]):
-				self.__draw_card('reverse', 100 + i*5, 0)
-			for i, card in enumerate(self.game_round.hands[2]):
-				self.__draw_card('reverse-cw', 0, 20+i*5, gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
-			for i, card in enumerate(self.game_round.hands[3]):
-				self.__draw_card('reverse-ccw', 200, 20+i*5, gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+			self.__draw_hand(self.game_round.hands[1], 100, 0, showRealCards=False)
+			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False)
+			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False)
 
+	def __draw_hand(self, cards, x, y, orientation=None, showRealCards=True):
+		'''
+		Draws a set of cards (a hand) into the area that starts at coordinates (x,y)
+		The area measures CARD_HEIGHT in the short-side, and AREAS_LONGSIDE in the long-side.
+		Cards are then distributed uniformily across the area.
+		'''
 
+		n = len(cards)
+		if n != 1:
+			delta = (AREAS_LONGSIDE - CARD_WIDTH)/float(n - 1);
+		else:
+			delta = 0
+
+		if orientation == None:
+			for i, card in enumerate(cards):
+				if showRealCards:
+					self.__draw_card(card, int(x + delta*i), y)
+				else:
+					self.__draw_card('reverse', int(x + delta*i), y)
+
+		elif orientation == gtk.gdk.PIXBUF_ROTATE_UPSIDEDOWN:
+			for i, card in enumerate(cards):
+				if showRealCards:
+					self.__draw_card(card, int(x + delta*i), y)
+				else:
+					self.__draw_card('reverse-ud', int(x + delta*i), y)
+
+		elif orientation == gtk.gdk.PIXBUF_ROTATE_CLOCKWISE:
+			for i, card in enumerate(cards):
+				if showRealCards:
+					self.__draw_card(card, x, int(y + delta*i))
+				else:
+					self.__draw_card('reverse-cw', x, int(y + delta*i))
+
+		elif orientation == gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE:
+			for i, card in enumerate(cards):
+				if showRealCards:
+					self.__draw_card(card, x, int(y + delta*i))
+				else:
+					self.__draw_card('reverse-ccw', x, int(y + delta*i))
 
 	#############################
 	# Low-level drawing methods #
 	#############################
-	def __draw_lowering_area(self, x, y, width, height):
+	def __draw_lowering_area(self, x, y, orientation='h'):
 		'''
 		Draws the lowering area border, in the given coordinates, and with the given dimensions.
 		The lowering area is a rounded rectangle with dashed grey border, where the lowered
@@ -239,6 +277,10 @@ class CardArea(gtk.DrawingArea):
 		self.context.set_source_rgb(0.9,0.9,0.9)
 
 		# Draw it!
+		if orientation == 'h':
+			width, height = (AREAS_LONGSIDE, CARD_HEIGHT)
+		else:
+			width, hright = (CARD_HEIGHT, AREAS_LONGSIDE)
 		round_rectangle(self.context, x, y, width, height)
 		self.context.stroke();
 
