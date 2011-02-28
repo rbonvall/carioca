@@ -209,12 +209,12 @@ class CardArea(gtk.DrawingArea):
 			self.__draw_hand(self.game_round.hands[1], 100, 0, showRealCards=False)
 			self.__draw_lowering_area(100, CARD_HEIGHT + 2)
 		elif self.nr_players == 3:
-			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False)
-			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False)
+			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False,   orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
+			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
 		elif self.nr_players == 4:
 			self.__draw_hand(self.game_round.hands[1], 100, 0, showRealCards=False)
-			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False)
-			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False)
+			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False,   orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
+			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
 
 	def __draw_hand(self, cards, x, y, orientation=None, showRealCards=True):
 		'''
@@ -246,16 +246,16 @@ class CardArea(gtk.DrawingArea):
 		elif orientation == gtk.gdk.PIXBUF_ROTATE_CLOCKWISE:
 			for i, card in enumerate(cards):
 				if showRealCards:
-					self.__draw_card(card, x, int(y + delta*i))
+					self.__draw_card(card, x, int(y + delta*i), 'v')
 				else:
-					self.__draw_card('reverse-cw', x, int(y + delta*i))
+					self.__draw_card('reverse-cw', x, int(y + delta*i), 'v')
 
 		elif orientation == gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE:
 			for i, card in enumerate(cards):
 				if showRealCards:
-					self.__draw_card(card, x, int(y + delta*i))
+					self.__draw_card(card, x, int(y + delta*i), 'v')
 				else:
-					self.__draw_card('reverse-ccw', x, int(y + delta*i))
+					self.__draw_card('reverse-ccw', x, int(y + delta*i), 'v')
 
 	#############################
 	# Low-level drawing methods #
@@ -290,13 +290,13 @@ class CardArea(gtk.DrawingArea):
 		self.context.set_source(source_pattern)
 
 
-	def __draw_card(self, card, x, y, orientation=gtk.gdk.PIXBUF_ROTATE_NONE):
+	def __draw_card(self, card, x, y, orientation='h'):
 		'''
 		Draws the given card in the given position. If no orientation parameter is given,
 		the card has its natural orientation; otherwise, it is shown oriented depending
 		on the value of orientation
 		'''
-		if orientation == gtk.gdk.PIXBUF_ROTATE_NONE:
+		if orientation == 'h':
 			self.window.draw_pixbuf(None, self.card_pixbuf[card], 0, 0, x, y, CARD_WIDTH, CARD_HEIGHT)
 		else:
 			self.window.draw_pixbuf(None, self.card_pixbuf[card], 0, 0, x, y, CARD_HEIGHT, CARD_WIDTH)
