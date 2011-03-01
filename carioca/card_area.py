@@ -1,8 +1,9 @@
 # encoding: utf-8
+import cairo
 import gtk
-import math
 
 from carioca import HEARTS, CLUBS, DIAMONDS, SPADES
+from collections import namedtuple
 
 # Cards have a 9:14 ratio
 CARD_BASE_WIDTH  = 9
@@ -14,6 +15,17 @@ CARD_HEIGHT = 7 * CARD_BASE_HEIGHT
 # Areas where cards are shown are always CARD_HEIGHT in the short side
 # and AREAS_LONGSIDE in the long side
 AREAS_LONGSIDE = 4 * CARD_WIDTH
+
+# Other distances
+TOP_BOTTOM_PADDING       = 5
+LEFT_RIGHT_PADDING       = 5
+INTER_AREAS_PADDING      = 5
+STACK_AREA_VERT_PADDING  = 5
+STACK_AREA_HORIZ_PADDING = 5
+STACK_WELL_SEPARATION    = 5
+
+# Used to store (x,y) coordinates
+Coordinates = namedtuple('Coordinates', 'x y')
 
 def round_rectangle(context, x,y,w,h,r = 10):
 	'''Draw a rounded rectangle in the given cairo context'''
@@ -31,6 +43,7 @@ def round_rectangle(context, x,y,w,h,r = 10):
 	context.curve_to(x,y+h,x,y+h,x,y+h-r)       # Curve to G
 	context.line_to(x,y+r)                      # Line to H
 	context.curve_to(x,y,x,y,x+r,y)             # Curve to A
+	context.close_path()
 
 
 class CardArea(gtk.DrawingArea):
@@ -119,6 +132,7 @@ class CardArea(gtk.DrawingArea):
 		self.game_round = None
 
 		self.__initializeCards()
+		self.__initializeCairo()
 
 	def __initializeCards(self):
 
@@ -153,10 +167,27 @@ class CardArea(gtk.DrawingArea):
 		                          CARD_WIDTH, CARD_HEIGHT)
 		source.copy_area(x*CARD_WIDTH, y*CARD_HEIGHT, CARD_WIDTH, CARD_HEIGHT, self.card_pixbuf[key], 0, 0)
 
+	def __initializeCairo(self):
+
+		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 20, 30)
+		ctx     = cairo.Context(surface)
+		ctx.set_line_width(1)
+		ctx.set_source_rgb(0.95, 0.95, 0.95)
+		ctx.move_to(10,0)
+		ctx.line_to(19,14)
+		ctx.stroke()
+		ctx.move_to(0,15)
+		ctx.line_to(9,29)
+		ctx.stroke()
+
+		self.__diagonal_lines_surface_pattern = cairo.SurfacePattern(surface)
+		self.__diagonal_lines_surface_pattern.set_extend(cairo.EXTEND_REPEAT)
+
 	###################
 	# Signal handlers #
 	###################
 	def expose(self, widget, event):
+		print "Exposing!"
 		self.context = widget.window.cairo_create()
 		self.context.rectangle(event.area.x, event.area.y,
 		                       event.area.width, event.area.height)
@@ -187,7 +218,7 @@ class CardArea(gtk.DrawingArea):
 		# The green backgroung doesn't change
 		context.rectangle(0, 0, rect.width, rect.height)
 		context.set_source_rgb(0.0, 0.8, 0.0)
-		context.fill_preserve()
+		context.fill()
 
 		# Draw the different sets of cards
 		if self.game_round:
@@ -196,18 +227,41 @@ class CardArea(gtk.DrawingArea):
 			self.__draw_other_players()
 
 	def __draw_well_and_stack(self):
-		self.__draw_card(self.game_round.peek_well_card(), 100, 100)
-		self.__draw_card('reverse', 200, 100)
+
+		print "Drawing well and stack"
+		# Save the current source, so we reset it afterwards
+		source = self.context.get_source()
+
+		# Draw the area
+		x, y = self.coordinates['swa']
+		round_rectangle(self.context, x, y, AREAS_LONGSIDE, CARD_HEIGHT + STACK_AREA_VERT_PADDING*2)
+		self.context.set_source(self.__diagonal_lines_surface_pattern)
+		self.context.fill_preserve()
+		self.context.set_source_rgb(0,0,0)
+		self.context.stroke()
+		self.context.set_source(source)
+
+		# Draw the stack and the well
+		x, y = self.coordinates['w']
+		self.__draw_card(self.game_round.peek_well_card(), x, y)
+		x, y = self.coordinates['s']
+		self.__draw_card('reverse', x, y)
 
 	def __draw_local_player(self):
-		self.__draw_hand(self.game_round.hands[0], 100, 300)
-		self.__draw_lowering_area(100,200)
+		print "Drawing local player cards"
+		x, y = self.coordinates[(0,'c')]
+		self.__draw_hand(self.game_round.hands[0], x, y)
+		x, y = self.coordinates[(0,'l')]
+		self.__draw_lowering_area(x, y)
 
 	def __draw_other_players(self):
 
+		print "Drawing other players cards"
 		if self.nr_players == 2:
-			self.__draw_hand(self.game_round.hands[1], 100, 0, showRealCards=False)
-			self.__draw_lowering_area(100, CARD_HEIGHT + 2)
+			x, y = self.coordinates[(1,'c')]
+			self.__draw_hand(self.game_round.hands[1], x, y, showRealCards=False)
+			x, y = self.coordinates[(1,'l')]
+			self.__draw_lowering_area(x, y)
 		elif self.nr_players == 3:
 			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False,   orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
 			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
@@ -310,3 +364,23 @@ class CardArea(gtk.DrawingArea):
 
 	def set_nr_players(self, nr_players):
 		self.nr_players = nr_players
+		self.__update_player_coordinates();
+
+	def __update_player_coordinates(self):
+		'''
+		Update the origin coordinates for each player's cards and lowering areas,
+		depending on the amount of players for this game.
+		'''
+		self.coordinates = dict()
+
+		if self.nr_players == 2:
+			# Second player goes up
+			self.coordinates[(1,'c')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING)
+			self.coordinates[(1,'l')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT + INTER_AREAS_PADDING)
+			# Then the well and the stack
+			self.coordinates['swa'] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2)
+			self.coordinates['s']   = Coordinates(LEFT_RIGHT_PADDING + AREAS_LONGSIDE - (CARD_WIDTH + STACK_AREA_HORIZ_PADDING), TOP_BOTTOM_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2 + STACK_AREA_VERT_PADDING)
+			self.coordinates['w']   = Coordinates(LEFT_RIGHT_PADDING + AREAS_LONGSIDE - (CARD_WIDTH*2 + STACK_AREA_HORIZ_PADDING + STACK_WELL_SEPARATION), TOP_BOTTOM_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2 + STACK_AREA_VERT_PADDING)
+			# First player on the bottom
+			self.coordinates[(0,'l')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT*3 + INTER_AREAS_PADDING*3 + STACK_AREA_VERT_PADDING*2)
+			self.coordinates[(0,'c')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT*4 + INTER_AREAS_PADDING*4 + STACK_AREA_VERT_PADDING*2)
