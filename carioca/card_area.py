@@ -187,7 +187,6 @@ class CardArea(gtk.DrawingArea):
 	# Signal handlers #
 	###################
 	def expose(self, widget, event):
-		print "Exposing!"
 		self.context = widget.window.cairo_create()
 		self.context.rectangle(event.area.x, event.area.y,
 		                       event.area.width, event.area.height)
@@ -228,7 +227,6 @@ class CardArea(gtk.DrawingArea):
 
 	def __draw_well_and_stack(self):
 
-		print "Drawing well and stack"
 		# Save the current source, so we reset it afterwards
 		source = self.context.get_source()
 
@@ -248,7 +246,7 @@ class CardArea(gtk.DrawingArea):
 		self.__draw_card('reverse', x, y)
 
 	def __draw_local_player(self):
-		print "Drawing local player cards"
+
 		x, y = self.coordinates[(0,'c')]
 		self.__draw_hand(self.game_round.hands[0], x, y)
 		x, y = self.coordinates[(0,'l')]
@@ -256,7 +254,6 @@ class CardArea(gtk.DrawingArea):
 
 	def __draw_other_players(self):
 
-		print "Drawing other players cards"
 		if self.nr_players == 2:
 			x, y = self.coordinates[(1,'c')]
 			self.__draw_hand(self.game_round.hands[1], x, y, showRealCards=False)
