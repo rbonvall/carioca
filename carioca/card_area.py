@@ -9,8 +9,8 @@ from collections import namedtuple
 CARD_BASE_WIDTH  = 9
 CARD_BASE_HEIGHT = 14
 
-CARD_WIDTH  = 7 * CARD_BASE_WIDTH
-CARD_HEIGHT = 7 * CARD_BASE_HEIGHT
+CARD_WIDTH  = 5 * CARD_BASE_WIDTH
+CARD_HEIGHT = 5 * CARD_BASE_HEIGHT
 
 # Areas where cards are shown are always CARD_HEIGHT in the short side
 # and AREAS_LONGSIDE in the long side
@@ -255,17 +255,28 @@ class CardArea(gtk.DrawingArea):
 	def __draw_other_players(self):
 
 		if self.nr_players == 2:
-			x, y = self.coordinates[(1,'c')]
-			self.__draw_hand(self.game_round.hands[1], x, y, showRealCards=False)
-			x, y = self.coordinates[(1,'l')]
-			self.__draw_lowering_area(x, y)
+			self.__draw_other_player_sets(1)
 		elif self.nr_players == 3:
-			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False,   orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
-			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+			self.__draw_other_player_sets(1, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+			self.__draw_other_player_sets(2, orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
 		elif self.nr_players == 4:
-			self.__draw_hand(self.game_round.hands[1], 100, 0, showRealCards=False)
-			self.__draw_hand(self.game_round.hands[1], 0, 20, showRealCards=False,   orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
-			self.__draw_hand(self.game_round.hands[2], 200, 20, showRealCards=False, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+			self.__draw_other_player_sets(1, orientation=gtk.gdk.PIXBUF_ROTATE_COUNTERCLOCKWISE)
+			self.__draw_other_player_sets(2, orientation=gtk.gdk.PIXBUF_ROTATE_UPSIDEDOWN)
+			self.__draw_other_player_sets(3, orientation=gtk.gdk.PIXBUF_ROTATE_CLOCKWISE)
+
+	def __draw_other_player_sets(self, nr_player, orientation=None):
+		'''
+		Draws the hand and the lowering area for the given player
+		'''
+		x, y = self.coordinates[(nr_player,'c')]
+		self.__draw_hand(self.game_round.hands[nr_player], x, y, showRealCards=False, orientation=orientation)
+		x, y = self.coordinates[(nr_player,'l')]
+
+		if orientation == None or orientation == gtk.gdk.PIXBUF_ROTATE_UPSIDEDOWN:
+			self.__draw_lowering_area(x, y)
+		else:
+			self.__draw_lowering_area(x, y, 'v')
+
 
 	def __draw_hand(self, cards, x, y, orientation=None, showRealCards=True):
 		'''
@@ -331,7 +342,7 @@ class CardArea(gtk.DrawingArea):
 		if orientation == 'h':
 			width, height = (AREAS_LONGSIDE, CARD_HEIGHT)
 		else:
-			width, hright = (CARD_HEIGHT, AREAS_LONGSIDE)
+			width, height = (CARD_HEIGHT, AREAS_LONGSIDE)
 		round_rectangle(self.context, x, y, width, height)
 		self.context.stroke();
 
@@ -371,13 +382,37 @@ class CardArea(gtk.DrawingArea):
 		self.coordinates = dict()
 
 		if self.nr_players == 2:
+
 			# Second player goes up
 			self.coordinates[(1,'c')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING)
 			self.coordinates[(1,'l')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT + INTER_AREAS_PADDING)
-			# Then the well and the stack
+
+			# Then the well and the stack at the middle
 			self.coordinates['swa'] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2)
 			self.coordinates['s']   = Coordinates(LEFT_RIGHT_PADDING + AREAS_LONGSIDE - (CARD_WIDTH + STACK_AREA_HORIZ_PADDING), TOP_BOTTOM_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2 + STACK_AREA_VERT_PADDING)
 			self.coordinates['w']   = Coordinates(LEFT_RIGHT_PADDING + AREAS_LONGSIDE - (CARD_WIDTH*2 + STACK_AREA_HORIZ_PADDING + STACK_WELL_SEPARATION), TOP_BOTTOM_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2 + STACK_AREA_VERT_PADDING)
+
 			# First player on the bottom
 			self.coordinates[(0,'l')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT*3 + INTER_AREAS_PADDING*3 + STACK_AREA_VERT_PADDING*2)
 			self.coordinates[(0,'c')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING + CARD_HEIGHT*4 + INTER_AREAS_PADDING*4 + STACK_AREA_VERT_PADDING*2)
+
+		elif self.nr_players == 3:
+
+			# Third player goe2 on the left
+			self.coordinates[(2,'c')] = Coordinates(LEFT_RIGHT_PADDING, TOP_BOTTOM_PADDING)
+			self.coordinates[(2,'l')] = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT + INTER_AREAS_PADDING, TOP_BOTTOM_PADDING)
+
+			# Then the well and the stack at the middle
+			self.coordinates['swa'] = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2, TOP_BOTTOM_PADDING + int((AREAS_LONGSIDE - (STACK_AREA_VERT_PADDING*2 + CARD_HEIGHT))/2))
+			self.coordinates['s']   = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2 + AREAS_LONGSIDE - (CARD_WIDTH + STACK_AREA_HORIZ_PADDING), TOP_BOTTOM_PADDING + int((AREAS_LONGSIDE - (STACK_AREA_VERT_PADDING*2 + CARD_HEIGHT))/2) + STACK_AREA_VERT_PADDING)
+			self.coordinates['w']   = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2 + AREAS_LONGSIDE - (CARD_WIDTH*2 + STACK_AREA_HORIZ_PADDING + STACK_WELL_SEPARATION), TOP_BOTTOM_PADDING + int((AREAS_LONGSIDE - (STACK_AREA_VERT_PADDING*2 + CARD_HEIGHT))/2) + STACK_AREA_VERT_PADDING)
+
+			# Second player goes on the right
+			self.coordinates[(1,'l')] = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*3 + AREAS_LONGSIDE, TOP_BOTTOM_PADDING)
+			self.coordinates[(1,'c')] = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*3 + INTER_AREAS_PADDING*4 + AREAS_LONGSIDE, TOP_BOTTOM_PADDING)
+
+			# First player on the bottom
+			self.coordinates[(0,'l')] = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2, TOP_BOTTOM_PADDING + AREAS_LONGSIDE + INTER_AREAS_PADDING)
+			self.coordinates[(0,'c')] = Coordinates(LEFT_RIGHT_PADDING + CARD_HEIGHT*2 + INTER_AREAS_PADDING*2, TOP_BOTTOM_PADDING + AREAS_LONGSIDE + INTER_AREAS_PADDING*2 + CARD_HEIGHT)
+		elif self.nr_players == 4:
+			pass
