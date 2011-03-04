@@ -132,7 +132,10 @@ class CariocaGUI:
 
 		dialog = gtk.Dialog(title="Players", flags=gtk.DIALOG_MODAL)
 		dialog.set_has_separator(True)
-		dialog.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK).grab_default()
+
+		okButton = dialog.add_button(gtk.STOCK_OK, gtk.RESPONSE_OK)
+		okButton.grab_default()
+		okButton.grab_focus()
 		dialog.add_button(gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
 		dialog.vbox.pack_start(hbox, True, True, 0)
 		result = dialog.run()
