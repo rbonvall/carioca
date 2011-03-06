@@ -178,16 +178,19 @@ class CardArea(gtk.DrawingArea):
 
 	def __initializeCairo(self):
 
-		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 20, 30)
+		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 20, 20)
 		ctx     = cairo.Context(surface)
 		ctx.set_line_width(1)
-		ctx.set_source_rgb(0.95, 0.95, 0.95)
-		ctx.move_to(10,0)
-		ctx.line_to(19,14)
-		ctx.stroke()
-		ctx.move_to(0,15)
-		ctx.line_to(9,29)
-		ctx.stroke()
+		ctx.set_source_rgb(0.7, 0.7, 0.7)
+		for i in range(0, 20):
+			for j in range(0,10):
+				if j % 2 == 0 :
+					continue
+				real_j = j + i
+				if real_j > 19:
+					real_j -= 20
+				ctx.rectangle(i,real_j, 1, 1)
+				ctx.fill()
 
 		self.__diagonal_lines_surface_pattern = cairo.SurfacePattern(surface)
 		self.__diagonal_lines_surface_pattern.set_extend(cairo.EXTEND_REPEAT)
