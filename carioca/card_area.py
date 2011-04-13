@@ -207,7 +207,17 @@ class CardArea(gtk.DrawingArea):
 
 	def pressing(self, widget, event):
 		# event has x,y of where it was produced
-		pass
+
+		# Don't do anything if we are not playing!
+		if self.game_round is None:
+			return
+
+		x = int(event.x)
+		y = int(event.y)
+
+		print str(x) + ", " + str(y)
+
+		self.queue_draw()
 
 	def moving(self, widget, event):
 		# event has x,y of where it was produced
